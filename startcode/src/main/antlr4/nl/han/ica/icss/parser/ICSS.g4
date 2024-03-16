@@ -41,9 +41,11 @@ MIN: '-';
 MUL: '*';
 ASSIGNMENT_OPERATOR: ':=';
 
-
-
-
 //--- PARSER: ---
-stylesheet: EOF;
+stylesheet: stylerule;
 
+stylerule: identificator OPEN_BRACE declaration* CLOSE_BRACE;
+identificator: (ID_IDENT | CLASS_IDENT | LOWER_IDENT);
+declaration: property COLON value SEMICOLON;
+property: LOWER_IDENT;
+value: (COLOR | ID_IDENT | CLASS_IDENT | PIXELSIZE | PERCENTAGE | SCALAR | TRUE | FALSE);
