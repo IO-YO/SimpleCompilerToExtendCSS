@@ -40,7 +40,7 @@ MUL: '*';
 ASSIGNMENT_OPERATOR: ':=';
 
 //--- PARSER: ---
-stylesheet: styleRule;
+stylesheet: styleRule*;
 
 // --- Style rules ---
 styleRule
@@ -57,14 +57,25 @@ selector
     | LOWER_IDENT;
 declaration: property COLON propertyValue SEMICOLON;
 property: LOWER_IDENT;
-propertyValue
-    : COLOR
-    | ID_IDENT
-    | CLASS_IDENT
-    | PIXELSIZE
-    | PERCENTAGE
-    | SCALAR
-    | TRUE
-    | FALSE
-    // | variableReference
-    ;
+propertyValue: literal;
+literal:
+    | boolLiteral
+    | pixelLiteral
+    | colorLiteral
+    | percentageLiteral
+    | scalarLiteral
+  //  | variableReference
+  ;
+
+// [Stylesheet|[Stylerule|[TagSelector p|][Declaration|[Property: (background-color)|]
+// [Color literal (#ffffff)|]][Declaration|[Property: (width)|][Pixel literal (500)|]]]
+// [Stylerule|[TagSelector a|][Declaration|[Property: (color)|][Color literal (#ff0000)|]]]
+// [Stylerule|[IdSelector #menu|][Declaration|[Property: (width)|][Pixel literal (520)|]]]
+// [Stylerule|[ClassSelector .menu|][Declaration|[Property: (color)|][Color literal (#000000)|]]]]
+boolLiteral: TRUE | FALSE;
+colorLiteral: COLOR;
+percentageLiteral: PERCENTAGE;
+pixelLiteral: PIXELSIZE;
+scalarLiteral: SCALAR;
+//variableReference: CAPITAL_IDENT;
+
