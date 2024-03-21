@@ -10,7 +10,8 @@ import java.util.HashMap;
 
 public class Checker {
 
-    private IHANLinkedList<HashMap<String, ExpressionType>> variableTypes;
+    // I want a linked list as above but imported from java
+
 
     public void check(AST ast) {
         // variableTypes = new HANLinkedList<>();

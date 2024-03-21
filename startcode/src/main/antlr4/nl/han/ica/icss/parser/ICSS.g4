@@ -40,42 +40,29 @@ MUL: '*';
 ASSIGNMENT_OPERATOR: ':=';
 
 //--- PARSER: ---
-stylesheet: styleRule*;
+stylesheet: variableAssignment* styleRule*;
 
 // --- Style rules ---
-styleRule
-: selector OPEN_BRACE declaration* CLOSE_BRACE; // | variableDeclaration
+styleRule: selector OPEN_BRACE declaration* CLOSE_BRACE;
 
 // --- Variable declaration and reference ---
-// variableReference: CAPITAL_IDENT;
-// variableDeclaration: variableReference ASSIGNMENT_OPERATOR propertyValue SEMICOLON;
+variableAssignment: variableReference ASSIGNMENT_OPERATOR expression SEMICOLON;
+variableReference: CAPITAL_IDENT;
 
 // --- Selectors and declarations ---
 selector
     : ID_IDENT
     | CLASS_IDENT
-    | LOWER_IDENT;
-declaration: property COLON propertyValue SEMICOLON;
+    | LOWER_IDENT
+    ;
+declaration: property COLON expression SEMICOLON;
 property: LOWER_IDENT;
-propertyValue: literal;
+expression: literal | variableReference; // | operation;??
 literal:
-    | boolLiteral
-    | pixelLiteral
-    | colorLiteral
-    | percentageLiteral
-    | scalarLiteral
-  //  | variableReference
-  ;
-
-// [Stylesheet|[Stylerule|[TagSelector p|][Declaration|[Property: (background-color)|]
-// [Color literal (#ffffff)|]][Declaration|[Property: (width)|][Pixel literal (500)|]]]
-// [Stylerule|[TagSelector a|][Declaration|[Property: (color)|][Color literal (#ff0000)|]]]
-// [Stylerule|[IdSelector #menu|][Declaration|[Property: (width)|][Pixel literal (520)|]]]
-// [Stylerule|[ClassSelector .menu|][Declaration|[Property: (color)|][Color literal (#000000)|]]]]
-boolLiteral: TRUE | FALSE;
-colorLiteral: COLOR;
-percentageLiteral: PERCENTAGE;
-pixelLiteral: PIXELSIZE;
-scalarLiteral: SCALAR;
-//variableReference: CAPITAL_IDENT;
+    TRUE | FALSE #boolLiteral
+    | COLOR #pixelLiteral
+    | PERCENTAGE #colorLiteral
+    | PIXELSIZE #percentageLiteral
+    | SCALAR #scalarLiteral
+    ;
 

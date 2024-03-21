@@ -100,62 +100,56 @@ public class ASTListener extends ICSSBaseListener {
     }
 
     @Override
-    public void enterBoolLiteral(ICSSParser.BoolLiteralContext ctx) {
-        ASTNode boolLiteral = new BoolLiteral(ctx.getText());
-        currentContainer.push(boolLiteral);
+    public void enterLiteral(ICSSParser.LiteralContext ctx) {
+        ASTNode literal;
+        if (ctx.PIXELSIZE() != null) {
+            literal = new PixelLiteral(ctx.PIXELSIZE().getText());
+        } else if (ctx.PERCENTAGE() != null) {
+            literal = new PercentageLiteral(ctx.PERCENTAGE().getText());
+        } else if (ctx.COLOR() != null) {
+            literal = new ColorLiteral(ctx.COLOR().getText());
+        } else if (ctx.TRUE() != null) {
+            literal = new BoolLiteral(ctx.TRUE().getText());
+        } else if (ctx.FALSE() != null) {
+            literal = new BoolLiteral(ctx.FALSE().getText());
+        } else if (ctx.SCALAR() != null) {
+            literal = new ScalarLiteral(ctx.SCALAR().getText());
+        } else {
+            literal = null;
+        }
+        currentContainer.push(literal);
     }
 
     @Override
-    public void exitBoolLiteral(ICSSParser.BoolLiteralContext ctx) {
-        ASTNode boolLiteral = currentContainer.pop();
-        currentContainer.peek().addChild(boolLiteral);
+    public void exitLiteral(ICSSParser.LiteralContext ctx) {
+        ASTNode literal = currentContainer.pop();
+        currentContainer.peek().addChild(literal);
+    }
+
+    // ------------------ START OF LEVEL 1 ------------------
+
+
+    @Override
+    public void enterVariableAssignment(ICSSParser.VariableAssignmentContext ctx) {
+        ASTNode variableAssignment = new VariableAssignment();
+        currentContainer.push(variableAssignment);
     }
 
     @Override
-    public void enterColorLiteral(ICSSParser.ColorLiteralContext ctx) {
-        ASTNode colorLiteral = new ColorLiteral(ctx.getText());
-        currentContainer.push(colorLiteral);
+    public void exitVariableAssignment(ICSSParser.VariableAssignmentContext ctx) {
+        ASTNode variableAssignment = currentContainer.pop();
+        currentContainer.peek().addChild(variableAssignment);
     }
 
     @Override
-    public void exitColorLiteral(ICSSParser.ColorLiteralContext ctx) {
-        ASTNode colorLiteral = currentContainer.pop();
-        currentContainer.peek().addChild(colorLiteral);
+    public void enterVariableReference(ICSSParser.VariableReferenceContext ctx) {
+        ASTNode variableReference = new VariableReference(ctx.getText());
+        currentContainer.push(variableReference);
     }
 
     @Override
-    public void enterPercentageLiteral(ICSSParser.PercentageLiteralContext ctx) {
-        ASTNode percentageLiteral = new PercentageLiteral(ctx.getText());
-        currentContainer.push(percentageLiteral);
-    }
-
-    @Override
-    public void exitPercentageLiteral(ICSSParser.PercentageLiteralContext ctx) {
-        ASTNode percentageLiteral = currentContainer.pop();
-        currentContainer.peek().addChild(percentageLiteral);
-    }
-
-    @Override
-    public void enterPixelLiteral(ICSSParser.PixelLiteralContext ctx) {
-        ASTNode pixelLiteral = new PixelLiteral(ctx.getText());
-        currentContainer.push(pixelLiteral);
-    }
-
-    @Override
-    public void exitPixelLiteral(ICSSParser.PixelLiteralContext ctx) {
-        ASTNode pixelLiteral = currentContainer.pop();
-        currentContainer.peek().addChild(pixelLiteral);
-    }
-
-    @Override
-    public void enterScalarLiteral(ICSSParser.ScalarLiteralContext ctx) {
-        ASTNode scalarLiteral = new ScalarLiteral(ctx.getText());
-        currentContainer.push(scalarLiteral);
-    }
-
-    @Override
-    public void exitScalarLiteral(ICSSParser.ScalarLiteralContext ctx) {
-        ASTNode scalarLiteral = currentContainer.pop();
-        currentContainer.peek().addChild(scalarLiteral);
+    public void exitVariableReference(ICSSParser.VariableReferenceContext ctx) {
+        ASTNode variableReference = currentContainer.pop();
+        currentContainer.peek().addChild(variableReference);
     }
 }
