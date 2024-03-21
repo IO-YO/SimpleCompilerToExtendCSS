@@ -225,4 +225,30 @@ public class ASTListener extends ICSSBaseListener {
         ASTNode multiplyOperation = currentContainer.pop();
         currentContainer.peek().addChild(multiplyOperation);
     }
+
+    // ------------------ START OF LEVEL 3 ------------------
+
+    @Override
+    public void enterIfClause(ICSSParser.IfClauseContext ctx) {
+        ASTNode ifClause = new IfClause();
+        currentContainer.push(ifClause);
+    }
+
+    @Override
+    public void exitIfClause(ICSSParser.IfClauseContext ctx) {
+        ASTNode ifClause = currentContainer.pop();
+        currentContainer.peek().addChild(ifClause);
+    }
+
+    @Override
+    public void enterElseClause(ICSSParser.ElseClauseContext ctx) {
+        ASTNode elseClause = new ElseClause();
+        currentContainer.push(elseClause);
+    }
+
+    @Override
+    public void exitElseClause(ICSSParser.ElseClauseContext ctx) {
+        ASTNode elseClause = currentContainer.pop();
+        currentContainer.peek().addChild(elseClause);
+    }
 }
