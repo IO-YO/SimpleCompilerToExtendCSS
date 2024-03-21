@@ -4,6 +4,9 @@ import nl.han.ica.datastructures.HANStack;
 import nl.han.ica.datastructures.IHANStack;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
+import nl.han.ica.icss.ast.operations.AddOperation;
+import nl.han.ica.icss.ast.operations.MultiplyOperation;
+import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.selectors.ClassSelector;
 import nl.han.ica.icss.ast.selectors.IdSelector;
 import nl.han.ica.icss.ast.selectors.TagSelector;
@@ -100,34 +103,66 @@ public class ASTListener extends ICSSBaseListener {
     }
 
     @Override
-    public void enterLiteral(ICSSParser.LiteralContext ctx) {
-        ASTNode literal;
-        if (ctx.PIXELSIZE() != null) {
-            literal = new PixelLiteral(ctx.PIXELSIZE().getText());
-        } else if (ctx.PERCENTAGE() != null) {
-            literal = new PercentageLiteral(ctx.PERCENTAGE().getText());
-        } else if (ctx.COLOR() != null) {
-            literal = new ColorLiteral(ctx.COLOR().getText());
-        } else if (ctx.TRUE() != null) {
-            literal = new BoolLiteral(ctx.TRUE().getText());
-        } else if (ctx.FALSE() != null) {
-            literal = new BoolLiteral(ctx.FALSE().getText());
-        } else if (ctx.SCALAR() != null) {
-            literal = new ScalarLiteral(ctx.SCALAR().getText());
-        } else {
-            literal = null;
-        }
-        currentContainer.push(literal);
+    public void enterBoolLiteral(ICSSParser.BoolLiteralContext ctx) {
+        ASTNode boolLiteral = new BoolLiteral(ctx.getText());
+        currentContainer.push(boolLiteral);
     }
 
     @Override
-    public void exitLiteral(ICSSParser.LiteralContext ctx) {
-        ASTNode literal = currentContainer.pop();
-        currentContainer.peek().addChild(literal);
+    public void exitBoolLiteral(ICSSParser.BoolLiteralContext ctx) {
+        ASTNode boolLiteral = currentContainer.pop();
+        currentContainer.peek().addChild(boolLiteral);
+    }
+
+    @Override
+    public void enterColorLiteral(ICSSParser.ColorLiteralContext ctx) {
+        ASTNode colorLiteral = new ColorLiteral(ctx.getText());
+        currentContainer.push(colorLiteral);
+    }
+
+    @Override
+    public void exitColorLiteral(ICSSParser.ColorLiteralContext ctx) {
+        ASTNode colorLiteral = (ColorLiteral) currentContainer.pop();
+        currentContainer.peek().addChild(colorLiteral);
+    }
+
+    @Override
+    public void enterPixelLiteral(ICSSParser.PixelLiteralContext ctx) {
+        ASTNode pixelLiteral = new PixelLiteral(ctx.getText());
+        currentContainer.push(pixelLiteral);
+    }
+
+    @Override
+    public void exitPixelLiteral(ICSSParser.PixelLiteralContext ctx) {
+        ASTNode pixelLiteral = currentContainer.pop();
+        currentContainer.peek().addChild(pixelLiteral);
+    }
+
+    @Override
+    public void enterPercentageLiteral(ICSSParser.PercentageLiteralContext ctx) {
+        ASTNode percentageLiteral = new PercentageLiteral(ctx.getText());
+        currentContainer.push(percentageLiteral);
+    }
+
+    @Override
+    public void exitPercentageLiteral(ICSSParser.PercentageLiteralContext ctx) {
+        ASTNode percentageLiteral = currentContainer.pop();
+        currentContainer.peek().addChild(percentageLiteral);
+    }
+
+    @Override
+    public void enterScalarLiteral(ICSSParser.ScalarLiteralContext ctx) {
+        ASTNode scalarLiteral = new ScalarLiteral(ctx.getText());
+        currentContainer.push(scalarLiteral);
+    }
+
+    @Override
+    public void exitScalarLiteral(ICSSParser.ScalarLiteralContext ctx) {
+        ASTNode scalarLiteral = currentContainer.pop();
+        currentContainer.peek().addChild(scalarLiteral);
     }
 
     // ------------------ START OF LEVEL 1 ------------------
-
 
     @Override
     public void enterVariableAssignment(ICSSParser.VariableAssignmentContext ctx) {
@@ -151,5 +186,43 @@ public class ASTListener extends ICSSBaseListener {
     public void exitVariableReference(ICSSParser.VariableReferenceContext ctx) {
         ASTNode variableReference = currentContainer.pop();
         currentContainer.peek().addChild(variableReference);
+    }
+
+    // ------------------ START OF LEVEL 2 ------------------
+
+    @Override
+    public void enterAddOperation(ICSSParser.AddOperationContext ctx) {
+        ASTNode addOperation = new AddOperation();
+        currentContainer.push(addOperation);
+    }
+
+    @Override
+    public void exitAddOperation(ICSSParser.AddOperationContext ctx) {
+        ASTNode addOperation = currentContainer.pop();
+        currentContainer.peek().addChild(addOperation);
+    }
+
+    @Override
+    public void enterSubtractOperation(ICSSParser.SubtractOperationContext ctx) {
+        ASTNode subtractOperation = new SubtractOperation();
+        currentContainer.push(subtractOperation);
+    }
+
+    @Override
+    public void exitSubtractOperation(ICSSParser.SubtractOperationContext ctx) {
+        ASTNode subtractOperation = currentContainer.pop();
+        currentContainer.peek().addChild(subtractOperation);
+    }
+
+    @Override
+    public void enterMultiplyOperation(ICSSParser.MultiplyOperationContext ctx) {
+        ASTNode multiplyOperation = new MultiplyOperation();
+        currentContainer.push(multiplyOperation);
+    }
+
+    @Override
+    public void exitMultiplyOperation(ICSSParser.MultiplyOperationContext ctx) {
+        ASTNode multiplyOperation = currentContainer.pop();
+        currentContainer.peek().addChild(multiplyOperation);
     }
 }
