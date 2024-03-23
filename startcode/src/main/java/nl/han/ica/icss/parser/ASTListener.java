@@ -24,10 +24,12 @@ public class ASTListener extends ICSSBaseListener {
 
     //Use this to keep track of the parent nodes when recursively traversing the ast
     private IHANStack<ASTNode> currentContainer;
+//    private Stack<ASTNode> currentContainer;
 
     public ASTListener() {
         ast = new AST();
         currentContainer = new HANStack<>();
+//        currentContainer = new Stack<>();
     }
 
     public AST getAST() {
@@ -45,6 +47,7 @@ public class ASTListener extends ICSSBaseListener {
         ast.setRoot((Stylesheet) currentContainer.pop());
     }
 
+    //  ------------------ START OF LEVEL 0 ------------------
     @Override
     public void enterStyleRule(ICSSParser.StyleRuleContext ctx) {
         ASTNode styleRule = new Stylerule();
@@ -57,25 +60,56 @@ public class ASTListener extends ICSSBaseListener {
         currentContainer.peek().addChild(styleRule);
     }
 
+//    @Override
+//    public void enterSelector(ICSSParser.SelectorContext ctx) {
+//        ASTNode selector;
+//        if (ctx.ID_IDENT() != null) {
+//            selector = new IdSelector(ctx.ID_IDENT().getText());
+//        } else if (ctx.CLASS_IDENT() != null) {
+//            selector = new ClassSelector(ctx.CLASS_IDENT().getText());
+//        } else if (ctx.LOWER_IDENT() != null) {
+//            selector = new TagSelector(ctx.LOWER_IDENT().getText());
+//        } else {
+//            selector = null;
+//        }
+//        currentContainer.push(selector);
+//    }
+
+
     @Override
-    public void enterSelector(ICSSParser.SelectorContext ctx) {
-        ASTNode selector;
-        if (ctx.ID_IDENT() != null) {
-            selector = new IdSelector(ctx.ID_IDENT().getText());
-        } else if (ctx.CLASS_IDENT() != null) {
-            selector = new ClassSelector(ctx.CLASS_IDENT().getText());
-        } else if (ctx.LOWER_IDENT() != null) {
-            selector = new TagSelector(ctx.LOWER_IDENT().getText());
-        } else {
-            selector = null;
-        }
-        currentContainer.push(selector);
+    public void enterClassSelector(ICSSParser.ClassSelectorContext ctx) {
+        ASTNode classSelector = new ClassSelector(ctx.CLASS_IDENT().getText());
+        currentContainer.push(classSelector);
     }
 
     @Override
-    public void exitSelector(ICSSParser.SelectorContext ctx) {
-        ASTNode selector = currentContainer.pop();
-        currentContainer.peek().addChild(selector);
+    public void exitClassSelector(ICSSParser.ClassSelectorContext ctx) {
+        ASTNode classSelector = currentContainer.pop();
+        currentContainer.peek().addChild(classSelector);
+    }
+
+    @Override
+    public void enterIdSelector(ICSSParser.IdSelectorContext ctx) {
+        ASTNode idSelector = new IdSelector(ctx.ID_IDENT().getText());
+        currentContainer.push(idSelector);
+    }
+
+    @Override
+    public void exitIdSelector(ICSSParser.IdSelectorContext ctx) {
+        ASTNode idSelector = currentContainer.pop();
+        currentContainer.peek().addChild(idSelector);
+    }
+
+    @Override
+    public void enterTagSelector(ICSSParser.TagSelectorContext ctx) {
+        ASTNode tagSelector = new TagSelector(ctx.LOWER_IDENT().getText());
+        currentContainer.push(tagSelector);
+    }
+
+    @Override
+    public void exitTagSelector(ICSSParser.TagSelectorContext ctx) {
+        ASTNode tagSelector = currentContainer.pop();
+        currentContainer.peek().addChild(tagSelector);
     }
 
     @Override

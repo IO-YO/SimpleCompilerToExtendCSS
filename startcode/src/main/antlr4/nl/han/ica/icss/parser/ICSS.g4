@@ -1,33 +1,46 @@
 grammar ICSS;
 
 // --- PARSER: ---
-stylesheet: variableAssignment* styleRule* EOF;
+stylesheet: variableAssignment* styleRule*;
 
-// --- Style rules ---
-styleRule: selector OPEN_BRACE declaration* CLOSE_BRACE;
-
-// --- Variable declaration and reference ---
+// --- Variable Assignment and Reference ---
 variableAssignment: variableReference ASSIGNMENT_OPERATOR expression SEMICOLON;
 variableReference: CAPITAL_IDENT;
 
-// --- Selectors and declarations ---
-selector: ID_IDENT
-        | CLASS_IDENT
-        | LOWER_IDENT
-        ;
-declaration: property COLON expression SEMICOLON | ifClause;
+// --- Style rules ---
+styleRule: selector body;
+body: OPEN_BRACE (declaration | ifClause)* CLOSE_BRACE;
+
+// --- Selectors
+selector    : ID_IDENT      # idSelector
+            | CLASS_IDENT   # classSelector
+            | LOWER_IDENT   # tagSelector
+            ;
+
+// --- Declarations
+declaration: property COLON expression SEMICOLON;
 property: LOWER_IDENT;
 
 // --- Expressions: variable references, literals, and operations
-expression:     variableReference           # variableReferenceExpression
-            |   literal                     # literalExpression
+// TODO: Separate operations from expressions for better modularity to allow for more complex operations
+expression  :   variableReference                   # variableReferenceExpression
+            |   literal                             # literalExpression
             |   expression MUL expression   # multiplyOperation
             |   expression PLUS expression  # addOperation
             |   expression SUB expression   # subtractOperation
             ;
 
+// This does not work; tests don't pass.
+//            |   expression operation expression     # operationExpression
+//            ;
+//// --- Operations ---
+//operation   :  MUL      # multiplyOperation
+//            |  PLUS     # addOperation
+//            |  SUB      # subtractOperation
+//            ;
+
 // --- Literal expressions ---
-literal:    (TRUE | FALSE)  # boolLiteral
+literal :   (TRUE | FALSE)  # boolLiteral
         |   COLOR           # colorLiteral
         |   PERCENTAGE      # percentageLiteral
         |   PIXELSIZE       # pixelLiteral
@@ -35,10 +48,8 @@ literal:    (TRUE | FALSE)  # boolLiteral
         ;
 
 // --- if-else statement ---
-// IF [ expression ] { declaration* } ELSE { declaration* }
-// declaration* is a list of declarations or if-else statements
-ifClause: IF BOX_BRACKET_OPEN variableReference BOX_BRACKET_CLOSE OPEN_BRACE declaration+ CLOSE_BRACE elseClause?;
-elseClause: ELSE OPEN_BRACE declaration+ CLOSE_BRACE;
+ifClause: IF BOX_BRACKET_OPEN variableReference BOX_BRACKET_CLOSE body elseClause?;
+elseClause: ELSE body;
 
 // ---- LEXER: -------------------------------------------------------------------------------
 
