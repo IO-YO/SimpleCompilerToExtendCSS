@@ -8,6 +8,8 @@
 *.ear
 hs_err_pid*
 gen/*
+**/target/
+*/target/
 
 ##########################
 ## Maven
@@ -42,3 +44,5 @@ out/
 *.log
 *.out
 **/target
+**/gen/
+*/gen/
