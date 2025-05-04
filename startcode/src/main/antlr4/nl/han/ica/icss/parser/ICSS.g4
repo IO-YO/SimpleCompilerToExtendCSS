@@ -2,21 +2,17 @@ grammar ICSS;
 
 // --- PARSER: ---
 stylesheet
-    : variableAssignment* styleRule*
+    : variableDefinition* ruleSet*
     ;
 
 // --- Variable Assignment and Reference ---
-variableAssignment
-    : VARIABLE_REF ASSIGNMENT_OPERATOR expression SEMICOLON
+variableDefinition
+    : CAPITAL_IDENT ASSIGNMENT_OPERATOR expression SEMICOLON
     ;
 
 // --- Style rules ---
-styleRule
-    : selector body
-    ;
-
-body
-    : OPEN_BRACE (declaration | ifClause)* CLOSE_BRACE
+ruleSet
+    : selector block
     ;
 
 // --- Selectors ---
@@ -24,6 +20,10 @@ selector
     : ID_IDENT      # idSelector
     | CLASS_IDENT   # classSelector
     | LOWER_IDENT   # tagSelector
+    ;
+
+block
+    : OPEN_BRACE (variableDefinition | declaration | ifClause)* CLOSE_BRACE
     ;
 
 // --- Declarations ---
@@ -56,7 +56,7 @@ unaryExpr
 
 atom
     : literal                         # literalAtom
-    | VARIABLE_REF                    # variableAtom
+    | CAPITAL_IDENT                   # variableAtom
     | LPAREN expression RPAREN        # parenAtom
     ;
 
@@ -72,11 +72,11 @@ literal
 
 // --- if-else statement ---
 ifClause
-    : IF BOX_BRACKET_OPEN VARIABLE_REF BOX_BRACKET_CLOSE body elseClause?
+    : IF BOX_BRACKET_OPEN CAPITAL_IDENT BOX_BRACKET_CLOSE block elseClause?
     ;
 
 elseClause
-    : ELSE body
+    : ELSE block
     ;
 
 // --- LEXER RULES -------------------------------------------------------------------------------
@@ -105,9 +105,6 @@ CLASS_IDENT: '.' [a-z0-9\-]+;
 // General identifiers:
 LOWER_IDENT: [a-z] [a-z0-9\-]*;
 CAPITAL_IDENT: [A-Z] [A-Za-z0-9_]*;
-
-// Variable references:
-VARIABLE_REF: CAPITAL_IDENT;
 
 // Whitespace (skipped):
 WS: [ \t\r\n]+ -> skip;
