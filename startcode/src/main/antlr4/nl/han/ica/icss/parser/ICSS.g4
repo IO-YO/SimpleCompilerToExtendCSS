@@ -72,7 +72,7 @@ literal
 
 // --- if-else statement ---
 ifClause
-    : IF BOX_BRACKET_OPEN CAPITAL_IDENT BOX_BRACKET_CLOSE block elseClause?
+    : IF BOX_BRACKET_OPEN expression BOX_BRACKET_CLOSE block elseClause?
     ;
 
 elseClause
