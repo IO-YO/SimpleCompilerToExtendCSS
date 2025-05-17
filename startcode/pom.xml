@@ -72,9 +72,13 @@
 			<plugin>
 				<groupId>org.openjfx</groupId>
 				<artifactId>javafx-maven-plugin</artifactId>
-				<version>0.0.3</version>
+				<version>0.0.8</version>
 				<configuration>
 					<mainClass>nl.han.ica.icss.gui.Main</mainClass>
+					<modules>
+						<module>javafx.controls</module>
+						<module>javafx.graphics</module>
+					</modules>
 				</configuration>
 			</plugin>
 			<!-- experimental: use for fat jar, but removes module encapsulation -->

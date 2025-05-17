@@ -2,16 +2,16 @@ grammar ICSS;
 
 // --- PARSER: ---
 stylesheet
-    : variableDefinition* ruleSet*
+    : variableAssignment* stylerule*
     ;
 
 // --- Variable Assignment and Reference ---
-variableDefinition
+variableAssignment
     : CAPITAL_IDENT ASSIGNMENT_OPERATOR expression SEMICOLON
     ;
 
 // --- Style rules ---
-ruleSet
+stylerule
     : selector block
     ;
 
@@ -23,7 +23,7 @@ selector
     ;
 
 block
-    : OPEN_BRACE (variableDefinition | declaration | ifClause)* CLOSE_BRACE
+    : OPEN_BRACE (variableAssignment | declaration | ifClause)* CLOSE_BRACE
     ;
 
 // --- Declarations ---
