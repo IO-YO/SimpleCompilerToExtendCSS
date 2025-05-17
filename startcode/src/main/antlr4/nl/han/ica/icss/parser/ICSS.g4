@@ -7,8 +7,11 @@ stylesheet
 
 // --- Variable Assignment and Reference ---
 variableAssignment
-    : CAPITAL_IDENT ASSIGNMENT_OPERATOR expression SEMICOLON
+    : variableReference ASSIGNMENT_OPERATOR expression SEMICOLON
     ;
+
+// variableReference
+variableReference: CAPITAL_IDENT;
 
 // --- Style rules ---
 stylerule
@@ -38,20 +41,15 @@ property
 // --- Expressions ---
 
 expression
-    : addExpr
+    : addOperation
     ;
 
-addExpr
-    : mulExpr ( (PLUS | MINUS) mulExpr )*
+addOperation
+    : multiplyOperation ( (PLUS | MINUS) multiplyOperation )*
     ;
 
-mulExpr
-    : unaryExpr ( (STAR | SLASH) unaryExpr )*
-    ;
-
-unaryExpr
-    : MINUS atom      # unaryMinus
-    | atom            # passThrough
+multiplyOperation
+    : atom ( (STAR | SLASH) atom )*
     ;
 
 atom

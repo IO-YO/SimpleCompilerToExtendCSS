@@ -32,10 +32,6 @@ public class AST {
 	        collectErrors(errors,child);
         }
     }
-	@Override
-	public String toString() {
-		return root.toString();
-	}
 
 	@Override
 	public boolean equals(Object o) {
@@ -48,5 +44,34 @@ public class AST {
 	@Override
 	public int hashCode() {
 		return Objects.hash(root);
+	}
+
+
+	@Override
+	public String toString() {
+		if (root == null) return "AST is empty";
+		return prettyPrintNode(root, 0);
+	}
+
+	private String prettyPrintNode(ASTNode node, int indentLevel) {
+		StringBuilder sb = new StringBuilder();
+		String indent = "  ".repeat(indentLevel);
+
+		// Print current node
+		sb.append(indent)
+				.append(node.getClass().getSimpleName());
+
+		if (node.getNodeLabel() != null) {
+			sb.append(" (").append(node.getNodeLabel()).append(")");
+		}
+
+		sb.append("\n");
+
+		// Recursively print children
+		for (ASTNode child : node.getChildren()) {
+			sb.append(prettyPrintNode(child, indentLevel + 1));
+		}
+
+		return sb.toString();
 	}
 }
