@@ -36,6 +36,19 @@ public class ASTListener extends ICSSBaseListener {
     }
 
     @Override
+    public void enterStylerule(ICSSParser.StyleruleContext ctx) {
+        Stylerule rule = new Stylerule();
+        nodeStack.push(rule);
+    }
+
+    @Override
+    public void exitStylerule(ICSSParser.StyleruleContext ctx) {
+        Stylerule rule = (Stylerule) nodeStack.pop();
+        nodeStack.peek().addChild(rule);
+
+    }
+
+    @Override
     public void enterVariableAssignment(ICSSParser.VariableAssignmentContext ctx) {
         VariableAssignment varAss = new VariableAssignment();
         nodeStack.push(varAss);
@@ -69,6 +82,18 @@ public class ASTListener extends ICSSBaseListener {
     public void exitDeclaration(ICSSParser.DeclarationContext ctx) {
         Declaration decl = (Declaration) nodeStack.pop();
         nodeStack.peek().addChild(decl);
+    }
+
+    @Override
+    public void enterProperty(ICSSParser.PropertyContext ctx) {
+        PropertyName property = new PropertyName(ctx.getText());
+        nodeStack.push(property);
+    }
+
+    @Override
+    public void exitProperty(ICSSParser.PropertyContext ctx) {
+        PropertyName property = (PropertyName) nodeStack.pop();
+        nodeStack.peek().addChild(property);
     }
 
     @Override
@@ -121,14 +146,14 @@ public class ASTListener extends ICSSBaseListener {
 
     @Override
     public void enterMultiplyOperation(ICSSParser.MultiplyOperationContext ctx) {
-        MultiplyOperation multOp = new MultiplyOperation();
-        nodeStack.push(multOp);
+        MultiplyOperation multiplyOp = new MultiplyOperation();
+        nodeStack.push(multiplyOp);
     }
 
     @Override
     public void exitMultiplyOperation(ICSSParser.MultiplyOperationContext ctx) {
-        MultiplyOperation multOp = (MultiplyOperation) nodeStack.pop();
-        nodeStack.peek().addChild(multOp);
+        MultiplyOperation multiplyOp = (MultiplyOperation) nodeStack.pop();
+        nodeStack.peek().addChild(multiplyOp);
     }
 
     @Override

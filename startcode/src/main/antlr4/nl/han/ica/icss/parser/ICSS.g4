@@ -5,20 +5,23 @@ stylesheet
     : variableAssignment* stylerule*
     ;
 
-// --- Variable Assignment and Reference ---
+// --- Variable Assignment:
+// like Var := 100px; ---
 variableAssignment
     : variableReference ASSIGNMENT_OPERATOR expression SEMICOLON
     ;
 
-// variableReference
+// --- variableReference ---
 variableReference: CAPITAL_IDENT;
 
-// --- Style rules ---
+// --- Style rules:
+// like #id { width: 100px; } or .class { color: #ff0000; }
 stylerule
     : selector block
     ;
 
-// --- Selectors ---
+// --- Selectors:
+// like #id, .class, div
 selector
     : ID_IDENT      # idSelector
     | CLASS_IDENT   # classSelector
@@ -29,7 +32,8 @@ block
     : OPEN_BRACE (variableAssignment | declaration | ifClause)* CLOSE_BRACE
     ;
 
-// --- Declarations ---
+// --- Declarations:
+// like width: 100px; ---
 declaration
     : property COLON expression SEMICOLON
     ;
@@ -39,23 +43,12 @@ property
     ;
 
 // --- Expressions ---
-
 expression
-    : addOperation
-    ;
-
-addOperation
-    : multiplyOperation ( (PLUS | MINUS) multiplyOperation )*
-    ;
-
-multiplyOperation
-    : atom ( (STAR | SLASH) atom )*
-    ;
-
-atom
-    : literal                         # literalAtom
-    | CAPITAL_IDENT                   # variableAtom
-    | LPAREN expression RPAREN        # parenAtom
+    : expression (STAR) expression                      # multiplyOperation
+    | expression (MINUS | PLUS) expression              # addOperation
+    | literal                                           # literalExpression
+    | variableReference                                 # variableReferenceExpression
+    | LPAREN expression RPAREN                          # parenAtom
     ;
 
 // --- Literal expressions ---
