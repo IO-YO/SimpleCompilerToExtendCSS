@@ -318,9 +318,9 @@ public class Fixtures {
 			.addChild((new Declaration("color"))
 				.addChild(new ColorLiteral("#000000"))
             )
-				.addChild((new Declaration("background-color"))
-						.addChild(new VariableReference("LinkColor"))
-				)
+			.addChild((new Declaration("background-color"))
+					.addChild(new VariableReference("LinkColor"))
+			)
 
 		);
 

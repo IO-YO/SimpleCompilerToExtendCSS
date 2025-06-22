@@ -13,6 +13,7 @@ public class Declaration extends ASTNode {
 	public Declaration() {
 		super();
 	}
+
 	public Declaration(String property) {
 		super();
 		this.property = new PropertyName(property);

@@ -3,7 +3,6 @@ package nl.han.ica.icss.ast;
 import nl.han.ica.icss.checker.SemanticError;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Objects;
 
 public class AST {
@@ -19,6 +18,12 @@ public class AST {
 	public void setRoot(Stylesheet stylesheet) {
 		root = stylesheet;
 	}
+
+	public ASTNode getRoot() {
+		if(root == null) throw new IllegalStateException("AST root is not set");
+		return root;
+	}
+
     public ArrayList<SemanticError> getErrors() {
 	    ArrayList<SemanticError> errors = new ArrayList<>();
         collectErrors(errors,root);
