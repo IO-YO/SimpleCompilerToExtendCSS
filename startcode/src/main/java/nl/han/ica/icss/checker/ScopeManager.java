@@ -21,8 +21,9 @@ public class ScopeManager {
     }
 
     public void declare(String name, ExpressionType type) {
-        assert scopes.peek() != null;
-        Objects.requireNonNull(scopes.peek().put(name, type));
+        Map<String, ExpressionType> current = scopes.peek();
+        if (current == null) throw new IllegalStateException("No active scope to declare variable in.");
+        current.put(name, type);
     }
 
     public ExpressionType resolve(String name) {

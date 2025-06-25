@@ -11,6 +11,7 @@ import static nl.han.ica.icss.checker.ASTScopeRules.opensScope;
 
 public class Checker {
 
+    int counter = 0;
     ScopeManager scopeManager;
 
     private final Map<String, Set<Class<? extends Expression>>> allowedTypes = Map.of(
@@ -20,6 +21,14 @@ public class Checker {
             "background-color", Set.of(ColorLiteral.class)
     );
 
+    private final Map<Class<?>, ExpressionType>  typeMap = Map.of(
+            PixelLiteral.class, ExpressionType.PIXEL,
+            ColorLiteral.class, ExpressionType.COLOR,
+            PercentageLiteral.class, ExpressionType.PERCENTAGE,
+            ScalarLiteral.class, ExpressionType.SCALAR,
+            BoolLiteral.class, ExpressionType.BOOL
+    );
+
     public void check(AST ast) {
         if (ast == null || ast.root == null) throw new IllegalArgumentException("AST or root cannot be null");
         scopeManager = new ScopeManager();
@@ -27,9 +36,13 @@ public class Checker {
     }
 
     private void checkNode(ASTNode node) {
-        if (opensScope(node)) scopeManager.enterScope();
+        if (opensScope(node)){
+            counter++;
+            System.out.println("Scope push: " + counter);
+            scopeManager.enterScope();
+        }
 
-        if (node instanceof VariableAssignment) checkVariableAssignment((VariableAssignment) node);
+        if (node instanceof VariableAssignment) handleVariableAssignment((VariableAssignment) node);
         if (node instanceof VariableReference) checkVariableReference((VariableReference) node);
         if (node instanceof Declaration) checkDeclaration((Declaration) node);
 
@@ -37,14 +50,25 @@ public class Checker {
             checkNode(child);
         }
 
-        if(opensScope(node)) scopeManager.exitScope();
+        if(opensScope(node)) {
+            counter--;
+            System.out.println("Scope pop: " + counter);
+            scopeManager.exitScope();
+        }
     }
 
     private void checkVariableReference(VariableReference node) {
+        if(scopeManager.resolve(node.name) == null) node.setError("Variable is not defined.");
     }
 
-    private void checkVariableAssignment(ASTNode node) {
+    private void handleVariableAssignment(VariableAssignment node) {
+        String name = node.name.name;
+        ExpressionType type = getExpressionType(node.expression);
+        scopeManager.declare(name, type);
+    }
 
+    private ExpressionType getExpressionType(Expression node) {
+        return typeMap.getOrDefault(node.getClass(), ExpressionType.UNDEFINED);
     }
 
     private void checkDeclaration(Declaration node) {
