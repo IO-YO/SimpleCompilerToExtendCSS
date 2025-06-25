@@ -1,14 +1,17 @@
 package nl.han.ica.icss.checker;
 
-import nl.han.ica.datastructures.HANStack;
-import nl.han.ica.datastructures.IHANStack;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
+import nl.han.ica.icss.ast.types.ExpressionType;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static nl.han.ica.icss.checker.ASTScopeRules.opensScope;
+
 public class Checker {
+
+    ScopeManager scopeManager;
 
     private final Map<String, Set<Class<? extends Expression>>> allowedTypes = Map.of(
             "width", Set.of(PixelLiteral.class, PercentageLiteral.class),
@@ -19,26 +22,29 @@ public class Checker {
 
     public void check(AST ast) {
         if (ast == null || ast.root == null) throw new IllegalArgumentException("AST or root cannot be null");
+        scopeManager = new ScopeManager();
+        checkNode(ast.root);
+    }
 
-        IHANStack<ASTNode> stack = new HANStack();
-        stack.push(ast.root);
-        while (true){
-            ASTNode currentNode;
-            try {
-                currentNode = stack.pop();
-            } catch (EmptyStackException e) {
-                break;
-            }
-            if (currentNode instanceof Declaration) {
-                checkDeclaration((Declaration) currentNode);
+    private void checkNode(ASTNode node) {
+        if (opensScope(node)) scopeManager.enterScope();
 
-            }
+        if (node instanceof VariableAssignment) checkVariableAssignment((VariableAssignment) node);
+        if (node instanceof VariableReference) checkVariableReference((VariableReference) node);
+        if (node instanceof Declaration) checkDeclaration((Declaration) node);
 
-            ArrayList<ASTNode> children = currentNode.getChildren();
-            for (int i = children.size() - 1; i >= 0; i--) {
-                stack.push(children.get(i));
-            }
+        for (ASTNode child : node.getChildren()) {
+            checkNode(child);
         }
+
+        if(opensScope(node)) scopeManager.exitScope();
+    }
+
+    private void checkVariableReference(VariableReference node) {
+    }
+
+    private void checkVariableAssignment(ASTNode node) {
+
     }
 
     private void checkDeclaration(Declaration node) {

@@ -28,4 +28,13 @@ public class Fixtures {
                 )
         );
     }
+
+    public static AST definedVariable() {
+        return ASTBuilder.stylesheet(
+                ASTBuilder.assign("DefaultWidth", new PixelLiteral(10)),
+                ASTBuilder.rule("p",
+                        ASTBuilder.declVar("width", "DefaultWidth")
+                        )
+        );
+    }
 }

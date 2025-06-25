@@ -3,14 +3,11 @@ package nl.han.ica.icss.checker;
 import nl.han.ica.icss.ast.AST;
 import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.literals.ScalarLiteral;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 
-import java.util.Formattable;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,6 +20,16 @@ class CheckerTest {
         return ast;
     }
 
+    /**
+     * Asserts that there is exactly one semantic error in the provided AST
+     * and that the error message contains the specified expected parts.
+     * If no errors are found, multiple errors are present, or the error message
+     * does not contain the expected parts, the assertion fails.
+     *
+     * @param ast The abstract syntax tree (AST) to check for semantic errors.
+     * @param expectedParts A variable-length list of expected substrings that should
+     *                      be present in the error message.
+     */
     private void assertSingleError(AST ast, String... expectedParts) {
         List<SemanticError> errors = getCleanErrors(ast);
 
@@ -77,6 +84,12 @@ class CheckerTest {
     void testUndefinedVariable() {
         AST ast = checkFixture(Fixtures.undefinedVariable());
         assertSingleError(ast, "Variable is not defined.");
+    }
+
+    @Test
+    void testDefinedVariable() {
+        AST ast = checkFixture(Fixtures.definedVariable());
+        assertNoErrors(ast);
     }
 
     @Test

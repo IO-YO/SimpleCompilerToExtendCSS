@@ -17,7 +17,7 @@ variableReference: CAPITAL_IDENT;
 // --- Style rules:
 // #id { width: 100px; } OR .class { color: #ff0000; }
 stylerule
-    : selector block
+    : selector body
     ;
 
 // --- Selectors:
@@ -63,11 +63,11 @@ literal
 
 // --- if-else statement ---
 ifClause
-    : IF BOX_BRACKET_OPEN expression BOX_BRACKET_CLOSE block elseClause?
+    : IF BOX_BRACKET_OPEN expression BOX_BRACKET_CLOSE body elseClause?
     ;
 
 elseClause
-    : ELSE block
+    : ELSE body
     ;
 
 // --- LEXER RULES -------------------------------------------------------------------------------

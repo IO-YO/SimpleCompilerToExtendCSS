@@ -6,11 +6,11 @@ import nl.han.ica.icss.ast.selectors.TagSelector;
 public class ASTBuilder {
 
     public static AST stylesheet(ASTNode... rules) {
-        Stylesheet ss = new Stylesheet();
+        Stylesheet sheet = new Stylesheet();
         for (ASTNode rule : rules) {
-            ss.addChild(rule);
+            sheet.addChild(rule);
         }
-        return new AST(ss);
+        return new AST(sheet);
     }
 
     public static Stylerule rule(String tagName, ASTNode... declarations) {
@@ -23,21 +23,21 @@ public class ASTBuilder {
     }
 
     public static Declaration decl(String property, Expression expression) {
-        Declaration d = new Declaration(property);
-        d.addChild(expression);
-        return d;
+        Declaration decl = new Declaration(property);
+        decl.addChild(expression);
+        return decl;
     }
 
     public static VariableAssignment assign(String name, Expression value) {
-        VariableAssignment a = new VariableAssignment();
-        a.addChild(new VariableReference(name));
-        a.addChild(value);
-        return a;
+        VariableAssignment ass = new VariableAssignment();
+        ass.addChild(new VariableReference(name));
+        ass.addChild(value);
+        return ass;
     }
 
     public static Declaration declVar(String property, String varName) {
-        Declaration d = new Declaration(property);
-        d.addChild(new VariableReference(varName));
-        return d;
+        Declaration decl = new Declaration(property);
+        decl.addChild(new VariableReference(varName));
+        return decl;
     }
 }
