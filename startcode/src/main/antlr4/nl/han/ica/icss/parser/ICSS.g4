@@ -15,25 +15,25 @@ variableAssignment
 variableReference: CAPITAL_IDENT;
 
 // --- Style rules:
-// like #id { width: 100px; } or .class { color: #ff0000; }
+// #id { width: 100px; } OR .class { color: #ff0000; }
 stylerule
     : selector block
     ;
 
 // --- Selectors:
-// like #id, .class, div
+// #id, .class, div
 selector
     : ID_IDENT      # idSelector
     | CLASS_IDENT   # classSelector
     | LOWER_IDENT   # tagSelector
     ;
 
-block
+body
     : OPEN_BRACE (variableAssignment | declaration | ifClause)* CLOSE_BRACE
     ;
 
 // --- Declarations:
-// like width: 100px; ---
+// width: 100px;
 declaration
     : property COLON expression SEMICOLON
     ;

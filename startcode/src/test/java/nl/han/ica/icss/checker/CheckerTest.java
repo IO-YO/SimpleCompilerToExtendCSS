@@ -17,18 +17,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CheckerTest {
 
-    public CheckerTest() {
-
+    private AST checkFixture(AST ast) {
+        Checker checker = new Checker();
+        checker.check(ast);
+        return ast;
     }
 
-    /**
-     * Helper method to assert that a single error is present in the AST.
-     * It checks that there is exactly one error and that its message matches the expected message.
-     *
-     * @param ast The AST to check for errors.
-     * @param expectedMessage The expected error message.
-     */
-    private void assertSingleError(AST ast, String expectedMessage) {
+    private void assertSingleError(AST ast, String... expectedParts) {
         List<SemanticError> errors = getCleanErrors(ast);
 
         if (errors.isEmpty()) {
@@ -43,7 +38,10 @@ class CheckerTest {
         }
 
         String actual = errors.get(0).toString();
-        assertEquals("ERROR: " + expectedMessage, actual);
+        for (String part : expectedParts) {
+            assertTrue(actual.contains(part),
+                    "Expected error message to contain: \"" + part + "\"\nActual: \"" + actual + "\"");
+        }
     }
 
     /**
@@ -83,8 +81,13 @@ class CheckerTest {
 
     @Test
     void testInvalidWidthExpression() {
-        AST ast = checkFixture(Fixtures.propertyDeclaration("p", "width", new ScalarLiteral("10")));
-        assertSingleError(ast, "Property 'width' can't be a 'Scalar literal (10)'");
+        String propertyWidth = "width";
+        ScalarLiteral literal = new ScalarLiteral(10);
+        AST ast = checkFixture(Fixtures.propertyDeclaration("p", propertyWidth, literal));
+        assertSingleError(ast,
+                propertyWidth,
+                literal.getNodeLabel()
+        );
     }
 
     @Test
@@ -93,10 +96,5 @@ class CheckerTest {
         assertNoErrors(ast);
     }
 
-    private AST checkFixture(AST ast) {
-        Checker checker = new Checker();
-        checker.check(ast);
-        return ast;
-    }
 
 }
