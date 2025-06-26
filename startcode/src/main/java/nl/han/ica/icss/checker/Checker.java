@@ -28,7 +28,9 @@ public class Checker {
     );
 
     public void check(AST ast) {
-        if (ast == null || ast.root == null) throw new IllegalArgumentException("AST or root cannot be null");
+        if (ast == null
+                || ast.root == null) throw new IllegalArgumentException("AST or root cannot be null");
+
         scopeManager = new ScopeManager();
         checkNode(ast.root);
     }
@@ -36,12 +38,20 @@ public class Checker {
     private void checkNode(ASTNode node) {
         if (isScopingNode(node)) scopeManager.enterScope();
 
-        if (node instanceof VariableAssignment) handleVariableAssignment((VariableAssignment) node);
-        if (node instanceof Declaration) checkDeclaration((Declaration) node);
+        if (node instanceof VariableAssignment assNode) handleVariableAssignment(assNode);
+        if (node instanceof IfClause ifNode) checkIfClause(ifNode);
+        if (node instanceof Declaration declNode) checkDeclaration(declNode);
 
         node.getChildren().forEach(this::checkNode);
 
         if(isScopingNode(node)) scopeManager.exitScope();
+    }
+
+    private void checkIfClause(IfClause ifNode) {
+        ExpressionType type = resolveExpressionType(ifNode.conditionalExpression, ifNode);
+        if (type != ExpressionType.BOOL) {
+            ifNode.setError("If-condition must be a boolean, but got: " + type);
+        }
     }
 
     private void handleVariableAssignment(VariableAssignment node) {

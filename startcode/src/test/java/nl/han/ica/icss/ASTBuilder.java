@@ -42,9 +42,9 @@ public class ASTBuilder {
         return decl;
     }
 
-    public static IfClause ifClause(ASTNode... bodyNodes) {
+    public static IfClause ifClause(ASTNode bool, ASTNode... bodyNodes) {
         IfClause clause = new IfClause();
-        clause.addChild(new BoolLiteral(true)); // condition
+        clause.addChild(bool);
         for (ASTNode node : bodyNodes) {
             clause.addChild(node);
         }

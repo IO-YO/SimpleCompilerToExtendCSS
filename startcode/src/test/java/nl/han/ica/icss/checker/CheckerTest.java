@@ -146,4 +146,28 @@ class CheckerTest {
         assertSingleError(ast, "ERROR", "NotDeclaredVariable");
     }
 
+    @Test
+    void test_ifStatementWithBoolean_Correct() {
+        AST ast = checkFixture(Fixtures.ifStatementWithBoolean_Correct());
+        assertNoErrors(ast);
+    }
+
+    @Test
+    void test_ifStatementWithScalar_Incorrect() {
+        AST ast = checkFixture(Fixtures.ifStatementWithScalar_incorrect());
+        assertSingleError(ast, "ERROR", "SCALAR", "If-condition");
+    }
+
+    @Test
+    void test_IfConditionWithVariableRef_Correct() {
+        AST ast = checkFixture(Fixtures.ifStatementVariableRef_Correct());
+        assertNoErrors(ast);
+    }
+
+    @Test
+    void test_IfConditionWithVariableRef_Incorrect() {
+        AST ast = checkFixture(Fixtures.ifStatementVariableRef_Incorrect());
+        assertSingleError(ast, "ERROR", "If-condition");
+    }
+
 }
