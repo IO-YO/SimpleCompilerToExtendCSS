@@ -44,49 +44,41 @@ public class Checker {
         if(isScopingNode(node)) scopeManager.exitScope();
     }
 
-    private ExpressionType resolveVariableReference(VariableReference node) {
-        ExpressionType refType = scopeManager.resolve(node.name);
-        if (refType == null) {
-            node.setError("Unknown variable '" + node.name + "'");
-            return ExpressionType.UNDEFINED;
-        } else return refType;
-    }
-
     private void handleVariableAssignment(VariableAssignment node) {
-        String name = node.name.name;
-        ExpressionType type;
-        if (node.expression instanceof VariableReference varRef) {
-            type = resolveVariableReference(varRef);
-        } else type = getExpressionType(node.expression);
-        scopeManager.declare(name, type);
+        ExpressionType type = resolveExpressionType(node.expression, node);
+        scopeManager.declare(node.name.name, type);
     }
 
-    private ExpressionType getExpressionType(Expression node) {
-        return typeMap.getOrDefault(node.getClass(), ExpressionType.UNDEFINED);
+    private ExpressionType resolveExpressionType(Expression expr, ASTNode errorTarget) {
+        if (expr instanceof VariableReference varRef) {
+            ExpressionType type = scopeManager.resolve(varRef.name);
+            if (type == null) {
+                errorTarget.setError("Unknown variable '" + varRef.name + "'");
+                return ExpressionType.UNDEFINED;
+            }
+            return type;
+        }
+        return typeMap.getOrDefault(expr.getClass(), ExpressionType.UNDEFINED);
     }
 
     private void checkDeclaration(Declaration node) {
-        Set<ExpressionType> allowed = allowedTypes.get(node.property.name);
+        String propertyName = node.property.name;
+        Set<ExpressionType> allowed = allowedTypes.get(propertyName);
 
         if (allowed == null) {
-            node.setError("Unknown property '" + node.property.name + "'");
+            node.setError("Unknown property '" + propertyName + "'");
             return;
         }
 
         if (node.expression == null) {
-            node.setError("Property '" + node.property.name + "' must have a value");
+            node.setError("Property '" + propertyName + "' must have a value");
             return;
         }
 
-        ExpressionType actualType;
+        ExpressionType actualType = resolveExpressionType(node.expression, node);
+        if (actualType == ExpressionType.UNDEFINED
+                || allowed.contains(actualType)) return;
 
-        if (node.expression instanceof VariableReference) {
-            actualType = resolveVariableReference((VariableReference) node.expression);
-            if (actualType == ExpressionType.UNDEFINED) return;
-        } else actualType = getExpressionType(node.expression);
-
-        if (!allowed.contains(actualType)) {
-            node.setError("Invalid value type '" + actualType + "' for property '" + node.property.name + "'");
-        }
+        node.setError("Invalid value type '" + actualType + "' for property '" + propertyName + "'");
     }
 }
