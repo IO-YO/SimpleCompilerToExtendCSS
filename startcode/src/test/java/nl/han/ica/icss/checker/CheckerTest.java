@@ -83,7 +83,7 @@ class CheckerTest {
     @Test
     void testUndefinedVariable() {
         AST ast = checkFixture(Fixtures.undefinedVariable());
-        assertSingleError(ast, "Variable is not defined.");
+        assertSingleError(ast, "ERROR", "Unknown variable", "DefaultWidth");
     }
 
     @Test
@@ -97,10 +97,7 @@ class CheckerTest {
         String propertyWidth = "width";
         ScalarLiteral literal = new ScalarLiteral(10);
         AST ast = checkFixture(Fixtures.propertyDeclaration("p", propertyWidth, literal));
-        assertSingleError(ast,
-                propertyWidth,
-                literal.getNodeLabel()
-        );
+        assertSingleError(ast, "ERROR", "SCALAR", propertyWidth);
     }
 
     @Test
@@ -113,29 +110,40 @@ class CheckerTest {
     void TestDefinedVariableReferencedWithWrongType() {
         AST ast = checkFixture(Fixtures.definedVariableReferencedWithWrongType());
         assertSingleError(ast,
-                "width",
-                "DefaultWidth",
-                "Color Literal",
-                "ERROR"
+                "ERROR:",
+                "PIXEL",
+                "color"
         );
     }
 
     @Test
     void testVariableDeclaredInIf_thenUsedOutside_shouldFail() {
         AST ast = checkFixture(Fixtures.variableDeclaredInsideIf_thenUsedOutside_shouldFail());
-        assertSingleError(ast, "ERROR", "not defined");
+        assertSingleError(ast, "ERROR", "Unknown variable");
     }
 
     @Test
     void testVariableDeclaredInElse_thenUsedOutside_shouldFail() {
         AST ast = checkFixture(Fixtures.variableDeclaredInsideElse_thenUsedOutside_shouldFail());
-        assertSingleError(ast, "ERROR", "not defined");
+        assertSingleError(ast, "ERROR", "Unknown variable");
     }
 
     @Test
     void testVariableDeclaredOutsideIf_thenUsedInside_shouldSucceed() {
         AST ast = checkFixture(Fixtures.variableDeclaredOutsideIf_thenUsedInside_shouldSucceed());
         assertNoErrors(ast);
+    }
+
+    @Test
+    void testVariableDeclaredWithAnotherVariable_Correct() {
+        AST ast = checkFixture(Fixtures.variableDeclaredWithAnotherVariable_Correct());
+        assertNoErrors(ast);
+    }
+
+    @Test
+    void testVariableDeclaredWithAnotherVariable_Incorrect() {
+        AST ast = checkFixture(Fixtures.variableDeclaredWithAnotherVariable_Incorrect());
+        assertSingleError(ast, "ERROR", "NotDeclaredVariable");
     }
 
 }

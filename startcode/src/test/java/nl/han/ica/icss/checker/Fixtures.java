@@ -80,4 +80,18 @@ public class Fixtures {
                 )
         );
     }
+
+    public static AST variableDeclaredWithAnotherVariable_Correct() {
+        return ASTBuilder.stylesheet(
+                ASTBuilder.assign("FirstVar", new PixelLiteral(10)),
+                ASTBuilder.assign("SecondVar", new VariableReference("FirstVar"))
+        );
+    }
+
+    public static AST variableDeclaredWithAnotherVariable_Incorrect() {
+        return ASTBuilder.stylesheet(
+                ASTBuilder.assign("FirstVar", new VariableReference("NotDeclaredVariable")));
+    }
+
+
 }
