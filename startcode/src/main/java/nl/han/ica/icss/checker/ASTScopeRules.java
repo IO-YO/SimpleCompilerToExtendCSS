@@ -12,7 +12,7 @@ public class ASTScopeRules {
             ElseClause.class
     );
 
-    public static boolean opensScope(ASTNode node) {
+    public static boolean isScopingNode(ASTNode node) {
         return scopeNodes.contains(node.getClass());
     }
 }

@@ -37,4 +37,47 @@ public class Fixtures {
                         )
         );
     }
+
+    public static AST definedVariableReferencedWithWrongType() {
+        return ASTBuilder.stylesheet(
+                ASTBuilder.assign("DefaultWidth", new PixelLiteral(10)),
+                ASTBuilder.rule("p",
+                        ASTBuilder.declVar("color", "DefaultWidth")
+                )
+        );
+    }
+
+    public static AST variableDeclaredInsideIf_thenUsedOutside_shouldFail() {
+        return ASTBuilder.stylesheet(
+                ASTBuilder.rule("p",
+                        ASTBuilder.ifClause(
+                                ASTBuilder.assign("ScopedVar", new PixelLiteral(10))
+                        ),
+                        ASTBuilder.declVar("width", "ScopedVar") // ❌ should error
+                )
+        );
+    }
+
+    public static AST variableDeclaredInsideElse_thenUsedOutside_shouldFail() {
+        return ASTBuilder.stylesheet(
+                ASTBuilder.rule("p",
+                        ASTBuilder.ifClauseWithElse(
+                                null, // no if-body
+                                ASTBuilder.assign("ScopedElseVar", new PixelLiteral(20))
+                        ),
+                        ASTBuilder.declVar("width", "ScopedElseVar")
+                )
+        );
+    }
+
+    public static AST variableDeclaredOutsideIf_thenUsedInside_shouldSucceed() {
+        return ASTBuilder.stylesheet(
+                ASTBuilder.assign("GlobalWidth", new PixelLiteral(15)),
+                ASTBuilder.rule("p",
+                        ASTBuilder.ifClause(
+                                ASTBuilder.declVar("width", "GlobalWidth")
+                        )
+                )
+        );
+    }
 }

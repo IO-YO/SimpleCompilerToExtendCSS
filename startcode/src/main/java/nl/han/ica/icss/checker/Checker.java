@@ -7,7 +7,7 @@ import nl.han.ica.icss.ast.types.ExpressionType;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static nl.han.ica.icss.checker.ASTScopeRules.opensScope;
+import static nl.han.ica.icss.checker.ASTScopeRules.isScopingNode;
 
 public class Checker {
 
@@ -36,11 +36,7 @@ public class Checker {
     }
 
     private void checkNode(ASTNode node) {
-        if (opensScope(node)){
-            counter++;
-            System.out.println("Scope push: " + counter);
-            scopeManager.enterScope();
-        }
+        if (isScopingNode(node)) scopeManager.enterScope();
 
         if (node instanceof VariableAssignment) handleVariableAssignment((VariableAssignment) node);
         if (node instanceof VariableReference) checkVariableReference((VariableReference) node);
@@ -50,11 +46,7 @@ public class Checker {
             checkNode(child);
         }
 
-        if(opensScope(node)) {
-            counter--;
-            System.out.println("Scope pop: " + counter);
-            scopeManager.exitScope();
-        }
+        if(isScopingNode(node)) scopeManager.exitScope();
     }
 
     private void checkVariableReference(VariableReference node) {

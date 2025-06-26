@@ -109,5 +109,33 @@ class CheckerTest {
         assertNoErrors(ast);
     }
 
+    @Test
+    void TestDefinedVariableReferencedWithWrongType() {
+        AST ast = checkFixture(Fixtures.definedVariableReferencedWithWrongType());
+        assertSingleError(ast,
+                "width",
+                "DefaultWidth",
+                "Color Literal",
+                "ERROR"
+        );
+    }
+
+    @Test
+    void testVariableDeclaredInIf_thenUsedOutside_shouldFail() {
+        AST ast = checkFixture(Fixtures.variableDeclaredInsideIf_thenUsedOutside_shouldFail());
+        assertSingleError(ast, "ERROR", "not defined");
+    }
+
+    @Test
+    void testVariableDeclaredInElse_thenUsedOutside_shouldFail() {
+        AST ast = checkFixture(Fixtures.variableDeclaredInsideElse_thenUsedOutside_shouldFail());
+        assertSingleError(ast, "ERROR", "not defined");
+    }
+
+    @Test
+    void testVariableDeclaredOutsideIf_thenUsedInside_shouldSucceed() {
+        AST ast = checkFixture(Fixtures.variableDeclaredOutsideIf_thenUsedInside_shouldSucceed());
+        assertNoErrors(ast);
+    }
 
 }

@@ -1,6 +1,7 @@
 package nl.han.ica.icss;
 
 import nl.han.ica.icss.ast.*;
+import nl.han.ica.icss.ast.literals.BoolLiteral;
 import nl.han.ica.icss.ast.selectors.TagSelector;
 
 public class ASTBuilder {
@@ -39,5 +40,28 @@ public class ASTBuilder {
         Declaration decl = new Declaration(property);
         decl.addChild(new VariableReference(varName));
         return decl;
+    }
+
+    public static IfClause ifClause(ASTNode... bodyNodes) {
+        IfClause clause = new IfClause();
+        clause.addChild(new BoolLiteral(true)); // condition
+        for (ASTNode node : bodyNodes) {
+            clause.addChild(node);
+        }
+        return clause;
+    }
+
+    public static IfClause ifClauseWithElse(ASTNode ifBody, ASTNode... elseBodyNodes) {
+        ElseClause elseClause = new ElseClause();
+        for (ASTNode node : elseBodyNodes) {
+            elseClause.addChild(node);
+        }
+        IfClause clause = new IfClause();
+        clause.addChild(new BoolLiteral(false)); // condition
+        if (ifBody != null) {
+            clause.addChild(ifBody);
+        }
+        clause.addChild(elseClause);
+        return clause;
     }
 }
