@@ -2,9 +2,10 @@ package nl.han.ica.icss.checker;
 
 import nl.han.ica.icss.ASTBuilder;
 import nl.han.ica.icss.ast.*;
-import nl.han.ica.icss.ast.literals.BoolLiteral;
-import nl.han.ica.icss.ast.literals.PixelLiteral;
-import nl.han.ica.icss.ast.literals.ScalarLiteral;
+import nl.han.ica.icss.ast.literals.*;
+import nl.han.ica.icss.ast.operations.AddOperation;
+import nl.han.ica.icss.ast.operations.MultiplyOperation;
+import nl.han.ica.icss.ast.operations.SubtractOperation;
 
 public class Fixtures {
 
@@ -132,4 +133,62 @@ public class Fixtures {
                 )
         );
     }
+
+    public static AST addScalarAndScalar() {
+        return ASTBuilder.ruleWithPropertyDeclaration("p", "width",
+                new AddOperation(new ScalarLiteral(10), new ScalarLiteral(5)));
+    }
+
+    public static AST addPixelAndPixel() {
+        return ASTBuilder.ruleWithPropertyDeclaration("p", "width",
+                new AddOperation(new PixelLiteral(10), new PixelLiteral(5)));
+    }
+
+    public static AST addPixelAndPercentage() {
+        return ASTBuilder.ruleWithPropertyDeclaration("p", "width",
+                new AddOperation(new PixelLiteral(10), new PercentageLiteral(5)));
+    }
+
+    public static AST subtractPercentageAndScalar() {
+        return ASTBuilder.ruleWithPropertyDeclaration("p", "width",
+                new SubtractOperation(new PercentageLiteral(10), new ScalarLiteral(2)));
+    }
+
+    public static AST subtractScalarAndScalar() {
+        return ASTBuilder.ruleWithPropertyDeclaration("p", "width",
+                new SubtractOperation(new ScalarLiteral(5), new ScalarLiteral(2)));
+    }
+
+    public static AST multiplyScalarAndPixel() {
+        return ASTBuilder.ruleWithPropertyDeclaration("p", "width",
+                new MultiplyOperation(new ScalarLiteral(2), new PixelLiteral(10)));
+    }
+
+    public static AST multiplyPixelAndScalar() {
+        return ASTBuilder.ruleWithPropertyDeclaration("p", "width",
+                new MultiplyOperation(new PixelLiteral(10), new ScalarLiteral(2)));
+    }
+
+    public static AST multiplyPixelAndPixel() {
+        return ASTBuilder.ruleWithPropertyDeclaration("p", "width",
+                new MultiplyOperation(new PixelLiteral(10), new PixelLiteral(5)));
+    }
+
+    public static AST addColorAndPixel() {
+        return ASTBuilder.ruleWithPropertyDeclaration("p", "color",
+                new AddOperation(new ColorLiteral("#ff0000"), new PixelLiteral(10)));
+    }
+
+    public static AST nestedComplexOperation() {
+        Expression expr =
+                new AddOperation(
+                        new SubtractOperation(
+                                new MultiplyOperation(new PixelLiteral(10), new ScalarLiteral(10)),
+                                new ScalarLiteral(5)
+                        ),
+                        new ScalarLiteral(2)
+                );
+        return ASTBuilder.ruleWithPropertyDeclaration("p", "width", expr);
+    }
+
 }

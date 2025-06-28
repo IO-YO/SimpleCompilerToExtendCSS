@@ -1,5 +1,6 @@
 package nl.han.ica.icss.checker;
 
+import nl.han.ica.icss.utils.ScopeManager;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.types.ExpressionType;
@@ -10,7 +11,7 @@ import static nl.han.ica.icss.checker.ASTScopeRules.isScopingNode;
 
 public class Checker {
 
-    ScopeManager scopeManager;
+    ScopeManager<ExpressionType> scopeManager;
 
     private final Map<String, Set<ExpressionType>> allowedTypes = Map.of(
             "width", Set.of(ExpressionType.PERCENTAGE, ExpressionType.PIXEL),
@@ -31,7 +32,7 @@ public class Checker {
         if (ast == null
                 || ast.root == null) throw new IllegalArgumentException("AST or root cannot be null");
 
-        scopeManager = new ScopeManager();
+        scopeManager = new ScopeManager<>();
         checkNode(ast.root);
     }
 

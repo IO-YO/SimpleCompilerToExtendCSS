@@ -170,4 +170,63 @@ class CheckerTest {
         assertSingleError(ast, "ERROR", "If-condition");
     }
 
+    @Test
+    void testAddScalarAndScalar_valid() {
+        AST ast = checkFixture(Fixtures.addScalarAndScalar());
+        assertNoErrors(ast);
+    }
+
+    @Test
+    void testAddPixelAndPixel_valid() {
+        AST ast = checkFixture(Fixtures.addPixelAndPixel());
+        assertNoErrors(ast);
+    }
+
+    @Test
+    void testAddPixelAndPercentage_invalid() {
+        AST ast = checkFixture(Fixtures.addPixelAndPercentage());
+        assertSingleError(ast, "Add", "PIXEL", "PERCENTAGE");
+    }
+
+    @Test
+    void testSubtractPercentageAndScalar_invalid() {
+        AST ast = checkFixture(Fixtures.subtractPercentageAndScalar());
+        assertSingleError(ast, "Subtract", "PERCENTAGE", "SCALAR");
+    }
+
+    @Test
+    void testSubtractScalarAndScalar_valid() {
+        AST ast = checkFixture(Fixtures.subtractScalarAndScalar());
+        assertNoErrors(ast);
+    }
+
+    @Test
+    void testMultiplyScalarAndPixel_valid() {
+        AST ast = checkFixture(Fixtures.multiplyScalarAndPixel());
+        assertNoErrors(ast);
+    }
+
+    @Test
+    void testMultiplyPixelAndScalar_valid() {
+        AST ast = checkFixture(Fixtures.multiplyPixelAndScalar());
+        assertNoErrors(ast);
+    }
+
+    @Test
+    void testMultiplyPixelAndPixel_invalid() {
+        AST ast = checkFixture(Fixtures.multiplyPixelAndPixel());
+        assertSingleError(ast, "Multiply", "PIXEL", "PIXEL");
+    }
+
+    @Test
+    void testAddColorAndPixel_invalid() {
+        AST ast = checkFixture(Fixtures.addColorAndPixel());
+        assertSingleError(ast, "Color", "operation");
+    }
+
+    @Test
+    void testNestedComplexOperation_invalid() {
+        AST ast = checkFixture(Fixtures.nestedComplexOperation());
+        assertSingleError(ast, "Subtract", "PIXEL", "SCALAR");
+    }
 }

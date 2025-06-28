@@ -57,11 +57,20 @@ public class ASTBuilder {
             elseClause.addChild(node);
         }
         IfClause clause = new IfClause();
-        clause.addChild(new BoolLiteral(false)); // condition
+        clause.addChild(new BoolLiteral(false));
         if (ifBody != null) {
             clause.addChild(ifBody);
         }
         clause.addChild(elseClause);
         return clause;
     }
+
+    public static AST ruleWithPropertyDeclaration(String ruleTag, String propertyName, Expression expression) {
+        return ASTBuilder.stylesheet(
+                ASTBuilder.rule(ruleTag,
+                        ASTBuilder.decl(propertyName, expression)
+                )
+        );
+    }
+
 }

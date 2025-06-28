@@ -47,3 +47,5 @@ out/
 **/gen/
 */gen/
 *.txt
+
+docs

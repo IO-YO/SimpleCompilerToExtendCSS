@@ -7,6 +7,13 @@ public abstract class Operation extends Expression {
     public Expression lhs;
     public Expression rhs;
 
+    public Operation(Expression lhs, Expression rhs) {
+        this.lhs = lhs;
+        this.rhs = rhs;
+    }
+
+    public Operation() {}
+
     @Override
     public ArrayList<ASTNode> getChildren() {
         ArrayList<ASTNode> children = new ArrayList<>();
