@@ -61,7 +61,7 @@ public class Fixtures {
         return ASTBuilder.stylesheet(
                 ASTBuilder.rule("p",
                         ASTBuilder.ifClauseWithElse(
-                                null, // no if-body
+                                new BoolLiteral(true),
                                 ASTBuilder.assign("ScopedElseVar", new PixelLiteral(20))
                         ),
                         ASTBuilder.declVar("width", "ScopedElseVar")

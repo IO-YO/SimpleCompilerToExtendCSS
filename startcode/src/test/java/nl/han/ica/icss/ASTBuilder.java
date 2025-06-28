@@ -51,13 +51,16 @@ public class ASTBuilder {
         return clause;
     }
 
-    public static IfClause ifClauseWithElse(ASTNode ifBody, ASTNode... elseBodyNodes) {
+    public static IfClause ifClauseWithElse(ASTNode condition, ASTNode ifBody, ASTNode... elseBodyNodes) {
+        if (!(condition instanceof BoolLiteral || condition instanceof VariableReference))
+            throw new IllegalArgumentException("Condition must be a boolean or variable reference");
+
         ElseClause elseClause = new ElseClause();
         for (ASTNode node : elseBodyNodes) {
             elseClause.addChild(node);
         }
         IfClause clause = new IfClause();
-        clause.addChild(new BoolLiteral(false));
+        clause.addChild(condition);
         if (ifBody != null) {
             clause.addChild(ifBody);
         }
