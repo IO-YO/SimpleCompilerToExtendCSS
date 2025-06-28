@@ -1,30 +1,29 @@
 package nl.han.ica.icss.transforms;
 
-import nl.han.ica.datastructures.IHANLinkedList;
 import nl.han.ica.icss.ast.*;
-import nl.han.ica.icss.ast.literals.PercentageLiteral;
-import nl.han.ica.icss.ast.literals.PixelLiteral;
-import nl.han.ica.icss.ast.literals.ScalarLiteral;
-import nl.han.ica.icss.ast.operations.AddOperation;
-import nl.han.ica.icss.ast.operations.MultiplyOperation;
-import nl.han.ica.icss.ast.operations.SubtractOperation;
+import nl.han.ica.icss.scoping.ScopeManager;
 
-import java.util.HashMap;
-import java.util.LinkedList;
+import static nl.han.ica.icss.scoping.ASTScopeRules.isScopingNode;
 
 public class Evaluator implements Transform {
 
-    private IHANLinkedList<HashMap<String, Literal>> variableValues;
+    ScopeManager<Literal> scopeManager;
 
     public Evaluator() {
-        //variableValues = new HANLinkedList<>();
     }
 
     @Override
     public void apply(AST ast) {
-        //variableValues = new HANLinkedList<>();
-
+        scopeManager = new ScopeManager<>();
+        ASTNode sheet = ast.root;
+        doAwesomeTransformation(sheet);
     }
 
-    
+    private void doAwesomeTransformation(ASTNode node) {
+        if(isScopingNode(node)) scopeManager.enterScope();
+
+        node.getChildren().forEach(this::doAwesomeTransformation);
+        if(isScopingNode(node)) scopeManager.exitScope();
+    }
+
 }

@@ -1,13 +1,13 @@
 package nl.han.ica.icss.checker;
 
-import nl.han.ica.icss.utils.ScopeManager;
+import nl.han.ica.icss.scoping.ScopeManager;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.types.ExpressionType;
 
 import java.util.*;
 
-import static nl.han.ica.icss.checker.ASTScopeRules.isScopingNode;
+import static nl.han.ica.icss.scoping.ASTScopeRules.isScopingNode;
 
 public class Checker {
 

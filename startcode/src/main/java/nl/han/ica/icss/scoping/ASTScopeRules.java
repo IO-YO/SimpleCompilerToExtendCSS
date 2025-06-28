@@ -1,4 +1,4 @@
-package nl.han.ica.icss.checker;
+package nl.han.ica.icss.scoping;
 
 import nl.han.ica.icss.ast.*;
 

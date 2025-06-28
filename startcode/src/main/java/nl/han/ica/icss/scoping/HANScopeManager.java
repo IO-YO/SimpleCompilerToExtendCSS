@@ -1,4 +1,4 @@
-package nl.han.ica.icss.utils;
+package nl.han.ica.icss.scoping;
 
 
 import nl.han.ica.datastructures.HANStack;
