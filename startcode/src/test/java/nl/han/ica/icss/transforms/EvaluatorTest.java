@@ -1,98 +1,112 @@
 package nl.han.ica.icss.transforms;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 class EvaluatorTest {
 
-    @Test
-    void test_ifClause_TrueCase() {
-        Fixtures.ASTPair test = Fixtures.ifClause_TrueCase();
+    private void assertEvaluatedCorrectly(Fixtures.ASTPair test) {
         new Evaluator().apply(test.input());
         assertEquals(test.expected(), test.input());
     }
 
+    // --- TR01: Expression Evaluation ---
+
     @Test
-    void test_ifClause_FalseCase() {
-        Fixtures.ASTPair test = Fixtures.ifClause_FalseCase();
-        new Evaluator().apply(test.input());
-        assertEquals(test.expected(), test.input());
+    @Tag("TR01")
+    @DisplayName("TR01: Addition of pixel literals is evaluated correctly")
+    void TR01_AddPixels_EvaluatesCorrectly() {
+        assertEvaluatedCorrectly(Fixtures.expressionEval_addPixels());
     }
 
     @Test
-    void test_ifClause_VariableAssignment_TrueCase() {
-        Fixtures.ASTPair test = Fixtures.ifClause_VariableAssignment_TrueCase();
-        new Evaluator().apply(test.input());
-        assertEquals(test.expected(), test.input());
+    @Tag("TR01")
+    @DisplayName("TR01: Multiply scalar and percentage is evaluated correctly")
+    void TR01_MultiplyScalarAndPercentage_EvaluatesCorrectly() {
+        assertEvaluatedCorrectly(Fixtures.expressionEval_multiplyScalarPercentage());
     }
 
     @Test
-    void test_ifClause_VariableAssignment_FalseCase() {
-        Fixtures.ASTPair test = Fixtures.ifClause_VariableAssignment_FalseCase();
-        new Evaluator().apply(test.input());
-        assertEquals(test.expected(), test.input());
+    @Tag("TR01")
+    @DisplayName("TR01: Multiply scalar and pixel is evaluated correctly")
+    void TR01_MultiplyScalarAndPixel_EvaluatesCorrectly() {
+        assertEvaluatedCorrectly(Fixtures.expressionEval_pixelTimesScalar());
     }
 
     @Test
-    void test_expressionEval_addPixels() {
-        Fixtures.ASTPair test = Fixtures.expressionEval_addPixels();
-        new Evaluator().apply(test.input());
-        assertEquals(test.expected(), test.input());
+    @Tag("TR01")
+    @DisplayName("TR01: Subtract percentage values is evaluated correctly")
+    void TR01_SubtractPercentages_EvaluatesCorrectly() {
+        assertEvaluatedCorrectly(Fixtures.expressionEval_subtractPercentages());
     }
 
     @Test
-    void test_expressionEval_multiplyScalarPercentage() {
-        Fixtures.ASTPair test = Fixtures.expressionEval_multiplyScalarPercentage();
-        new Evaluator().apply(test.input());
-        assertEquals(test.expected(), test.input());
+    @Tag("TR01")
+    @DisplayName("TR01: Precedence respected in mixed add/multiply expressions")
+    void TR01_AddMultiplyPrecedence_EvaluatesCorrectly() {
+        assertEvaluatedCorrectly(Fixtures.expressionEval_precedence_pxPlusScalarTimesPx());
+    }
+
+    // --- TR02: If/Else Evaluation ---
+
+    @Test
+    @Tag("TR02")
+    @DisplayName("TR02: If clause with true literal includes its body")
+    void TR02_IfTrue_IncludesIfBody() {
+        assertEvaluatedCorrectly(Fixtures.ifClause_TrueCase());
     }
 
     @Test
-    void test_expressionEval_subtractPercentages() {
-        Fixtures.ASTPair test = Fixtures.expressionEval_subtractPercentages();
-        new Evaluator().apply(test.input());
-        assertEquals(test.expected(), test.input());
+    @Tag("TR02")
+    @DisplayName("TR02: If clause with false literal removes its body")
+    void TR02_IfFalse_RemovesIfBody() {
+        assertEvaluatedCorrectly(Fixtures.ifClause_FalseCase());
     }
 
     @Test
-    void test_expressionEval_pixelTimesScalar() {
-        Fixtures.ASTPair test = Fixtures.expressionEval_pixelTimesScalar();
-        new Evaluator().apply(test.input());
-        assertEquals(test.expected(), test.input());
+    @Tag("TR02")
+    @DisplayName("TR02: If clause with true variable includes its body")
+    void TR02_IfVarTrue_IncludesIfBody() {
+        assertEvaluatedCorrectly(Fixtures.ifClause_VariableAssignment_TrueCase());
     }
 
     @Test
-    void test_expressionEval_precedence_pxPlusScalarTimesPx() {
-        Fixtures.ASTPair test = Fixtures.expressionEval_precedence_pxPlusScalarTimesPx();
-        new Evaluator().apply(test.input());
-        assertEquals(test.expected(), test.input());
+    @Tag("TR02")
+    @DisplayName("TR02: If clause with false variable removes its body")
+    void TR02_IfVarFalse_RemovesIfBody() {
+        assertEvaluatedCorrectly(Fixtures.ifClause_VariableAssignment_FalseCase());
     }
 
     @Test
-    void test_variableTransform_globalVar_refToRuleBodyDecl() {
-        Fixtures.ASTPair test = Fixtures.variableTransform_globalVar_refToRuleBodyDecl();
-        new Evaluator().apply(test.input());
-        assertEquals(test.expected(), test.input());
+    @Tag("TR02")
+    @DisplayName("TR02: If/Else clause with false condition keeps else body")
+    void TR02_IfWithElse_ConditionFalse_KeepsElseBody() {
+        assertEvaluatedCorrectly(Fixtures.ifWithElse_ifFalse_keepsElse());
     }
 
     @Test
-    void test_variableTransform_scopedVarInStyleRule_refToLiteral() {
-        Fixtures.ASTPair test = Fixtures.variableTransform_scopedVarInStyleRule_refToLiteral();
-        new Evaluator().apply(test.input());
-        assertEquals(test.expected(), test.input());
+    @Tag("TR02")
+    @DisplayName("TR02: Nested if/else applies both outer true and inner false conditions")
+    void TR02_NestedIfElse_OuterTrue_InnerFalse_KeepsInnerElse() {
+        assertEvaluatedCorrectly(Fixtures.ifIfElse_outerTrueKeepsInnerIf_innerFalseKeepsElse());
+    }
+
+    // --- Shared: Variable replacement ---
+
+    @Test
+    @Tag("TR01")
+    @DisplayName("TR01: Global variable reference is replaced by literal")
+    void TR01_GlobalVarReference_ReplacedWithLiteral() {
+        assertEvaluatedCorrectly(Fixtures.variableTransform_globalVar_refToRuleBodyDecl());
     }
 
     @Test
-    void test_ifWithElse_ifFalse_keepsElse() {
-        Fixtures.ASTPair test = Fixtures.ifWithElse_ifFalse_keepsElse();
-        new Evaluator().apply(test.input());
-        assertEquals(test.expected(), test.input());
-    }
-
-    @Test
-    void test_ifIfElse_outerTrueKeepsInnerIf_innerFalseKeepsElse() {
-        Fixtures.ASTPair test = Fixtures.ifIfElse_outerTrueKeepsInnerIf_innerFalseKeepsElse();
-        new Evaluator().apply(test.input());
-        assertEquals(test.expected(), test.input());
+    @Tag("TR01")
+    @DisplayName("TR01: Scoped variable in rule is replaced by literal")
+    void TR01_ScopedVarInRule_ReplacedWithLiteral() {
+        assertEvaluatedCorrectly(Fixtures.variableTransform_scopedVarInStyleRule_refToLiteral());
     }
 }
