@@ -39,7 +39,7 @@ class CheckerTest {
             fail("Expected one semantic error, but got " + errors.size() + ": " + allErrors);
         }
 
-        String actual = errors.get(0).toString();
+        String actual = errors.getFirst().toString();
         for (String part : expectedParts) {
             assertTrue(actual.contains(part),
                     "Expected error message to contain: \"" + part + "\"\nActual: \"" + actual + "\"");
