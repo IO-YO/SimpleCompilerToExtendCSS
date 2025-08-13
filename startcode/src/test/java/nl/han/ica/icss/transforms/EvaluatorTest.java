@@ -6,6 +6,7 @@ import nl.han.ica.icss.ast.literals.PercentageLiteral;
 import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.literals.ScalarLiteral;
 import nl.han.ica.icss.ast.operations.AddOperation;
+import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.operations.SubtractOperation;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -170,33 +171,120 @@ class EvaluatorTest {
         assertEvaluatedCorrectly(pair);
     }
 
-
-    @Test
-    @Tag("TR01")
-    @DisplayName("TR01: Multiply scalar and percentage is evaluated correctly")
-    void TR01_MultiplyScalarAndPercentage_EvaluatesCorrectly() {
-        assertEvaluatedCorrectly(Fixtures.expressionEval_multiplyScalarPercentage());
+    // --- TR01: Multiplication Evaluation ---
+    static Stream<Arguments> ExpressionMultiplicationCases() {
+        return Stream.of(
+                Arguments.of(new EvalCase(
+                        "MultiplyScalar",
+                        new MultiplyOperation(new ScalarLiteral(4), new ScalarLiteral(5)),
+                        new ScalarLiteral(20)
+                )),
+                Arguments.of(new EvalCase(
+                        "MultiplyMultiplePixels",
+                        new MultiplyOperation(
+                                new MultiplyOperation(
+                                        new ScalarLiteral(2),
+                                        new PixelLiteral(3)),
+                                new ScalarLiteral(4)
+                        ),
+                        new PixelLiteral(24)
+                )),
+                Arguments.of(new EvalCase(
+                        "MultiplyScalarAndPercentage",
+                        new MultiplyOperation(new ScalarLiteral(4), new PercentageLiteral(5)),
+                        new PercentageLiteral(20)
+                )),
+                Arguments.of(new EvalCase(
+                        "MultiplyPercentageAndScalar",
+                        new MultiplyOperation(new PercentageLiteral(4), new ScalarLiteral(5)),
+                        new PercentageLiteral(20)
+                )),
+                Arguments.of(new EvalCase(
+                        "MultiplyPixelAndScalar",
+                        new MultiplyOperation(new PixelLiteral(10), new ScalarLiteral(2)),
+                        new PixelLiteral(20)
+                )),
+                Arguments.of(new EvalCase(
+                        "MultiplyScalarAndPixel",
+                        new MultiplyOperation(new ScalarLiteral(2), new PixelLiteral(10)),
+                        new PixelLiteral(20)
+                ))
+        );
     }
 
-    @Test
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("ExpressionMultiplicationCases")
     @Tag("TR01")
-    @DisplayName("TR01: Multiply scalar and pixel is evaluated correctly")
-    void TR01_MultiplyScalarAndPixel_EvaluatesCorrectly() {
-        assertEvaluatedCorrectly(Fixtures.expressionEval_pixelTimesScalar());
+    @DisplayName("TR01: Multiplication expressions are evaluated correctly")
+    void TR01_Multiplication_EvaluatesCorrectly(EvalCase testCase) {
+        Fixtures.ASTPair pair = Fixtures.createASTPairForLiteralExpression(testCase.input(), testCase.Expected());
+        assertEvaluatedCorrectly(pair);
     }
 
-    @Test
-    @Tag("TR01")
-    @DisplayName("TR01: Subtract percentage values is evaluated correctly")
-    void TR01_SubtractPercentages_EvaluatesCorrectly() {
-        assertEvaluatedCorrectly(Fixtures.expressionEval_subtractPercentages());
+    // --- TR01: Mixed Operations Evaluation ---
+
+    static Stream<Arguments> MixedOperationsCases() {
+        return Stream.of(
+                Arguments.of(new EvalCase(
+                        "MixedAddAndMultiply",
+                        new AddOperation(
+                                new MultiplyOperation(
+                                        new PixelLiteral(2),
+                                        new ScalarLiteral(3)
+                                ),
+                                new PixelLiteral(4)
+                        ),
+                        new PixelLiteral(10)
+                )),
+                Arguments.of(new EvalCase(
+                        "MixedSubtractAndMultiply",
+                        new SubtractOperation(
+                                new MultiplyOperation(
+                                        new PercentageLiteral(5),
+                                        new ScalarLiteral(2)
+                                ),
+                                new PercentageLiteral(3)
+                        ),
+                        new PercentageLiteral(7)
+                )),
+                Arguments.of(new EvalCase(
+                        "MixedAddSubtractAndMultiply",
+                        new AddOperation(
+                                new SubtractOperation(
+                                        new ScalarLiteral(10),
+                                        new ScalarLiteral(2)
+                                ),
+                                new MultiplyOperation(
+                                        new ScalarLiteral(2),
+                                        new ScalarLiteral(3)
+                                )
+                        ),
+                        new ScalarLiteral(14)
+                )),
+                Arguments.of(new EvalCase(
+                        "MixedAddSubtractAndMultiplyPixels",
+                        new AddOperation(
+                                new SubtractOperation(
+                                        new PixelLiteral(10),
+                                        new PixelLiteral(2)
+                                ),
+                                new MultiplyOperation(
+                                        new ScalarLiteral(2),
+                                        new PixelLiteral(3)
+                                )
+                        ),
+                        new PixelLiteral(14)
+                ))
+        );
     }
 
-    @Test
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("MixedOperationsCases")
     @Tag("TR01")
-    @DisplayName("TR01: Precedence respected in mixed add/multiply expressions")
-    void TR01_AddMultiplyPrecedence_EvaluatesCorrectly() {
-        assertEvaluatedCorrectly(Fixtures.expressionEval_precedence_pxPlusScalarTimesPx());
+    @DisplayName("TR01: Mixed operations (add, subtract, multiply) are evaluated correctly")
+    void TR01_MixedOperations_EvaluatesCorrectly(EvalCase testCase) {
+        Fixtures.ASTPair pair = Fixtures.createASTPairForLiteralExpression(testCase.input(), testCase.Expected());
+        assertEvaluatedCorrectly(pair);
     }
 
     // --- TR02: If/Else Evaluation ---
@@ -246,16 +334,16 @@ class EvaluatorTest {
     // --- Shared: Variable replacement ---
 
     @Test
-    @Tag("TR01")
-    @DisplayName("TR01: Global variable reference is replaced by literal")
-    void TR01_GlobalVarReference_ReplacedWithLiteral() {
+    @Tag("TR03")
+    @DisplayName("TR03: Global variable reference is replaced by literal")
+    void TR03_GlobalVarReference_ReplacedWithLiteral() {
         assertEvaluatedCorrectly(Fixtures.variableTransform_globalVar_refToRuleBodyDecl());
     }
 
     @Test
-    @Tag("TR01")
-    @DisplayName("TR01: Scoped variable in rule is replaced by literal")
-    void TR01_ScopedVarInRule_ReplacedWithLiteral() {
+    @Tag("TR03")
+    @DisplayName("TR03: Scoped variable in rule is replaced by literal")
+    void TR03_ScopedVarInRule_ReplacedWithLiteral() {
         assertEvaluatedCorrectly(Fixtures.variableTransform_scopedVarInStyleRule_refToLiteral());
     }
 }

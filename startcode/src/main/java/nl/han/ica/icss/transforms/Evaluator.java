@@ -35,6 +35,32 @@ public class Evaluator implements Transform {
         if (expr instanceof Literal lit) return lit;
         if (expr instanceof AddOperation op) return evaluateAdd(op);
         if (expr instanceof SubtractOperation sub) return evaluateSubtract(sub);
+        if (expr instanceof MultiplyOperation mul) return evaluateMultiply(mul);
+        return null;
+    }
+
+    private Literal evaluateMultiply(MultiplyOperation mul) {
+        Literal lhs = evaluate(mul.lhs);
+        Literal rhs = evaluate(mul.rhs);
+
+        // px * scalar
+        if (lhs instanceof PixelLiteral l && rhs instanceof ScalarLiteral r)
+            return new PixelLiteral(l.value * r.value);
+        // scalar * px
+        if (lhs instanceof ScalarLiteral l && rhs instanceof PixelLiteral r)
+            return new PixelLiteral(l.value * r.value);
+
+        // percentage * scalar
+        if (lhs instanceof PercentageLiteral l && rhs instanceof ScalarLiteral r)
+            return new PercentageLiteral(l.value * r.value);
+        // scalar * percentage
+        if (lhs instanceof ScalarLiteral l && rhs instanceof PercentageLiteral r)
+            return new PercentageLiteral(l.value * r.value);
+
+        // scalar * scalar
+        if (lhs instanceof ScalarLiteral l && rhs instanceof ScalarLiteral r)
+            return new ScalarLiteral(l.value * r.value);
+
         return null;
     }
 
