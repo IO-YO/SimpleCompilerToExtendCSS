@@ -80,4 +80,25 @@ class ParserTest {
 		AST exp = Fixtures.uncheckedLevel3();
 		assertEquals(exp,sut);
 	}
+
+	@Test
+	void testParse_VariableAdditive() throws IOException {
+		AST sut = parseTestFile("variable-additive.icss");
+		AST exp = Fixtures.unchecked_VariableAdditive();
+		assertEquals(exp,sut);
+	}
+
+	@Test
+	void testParse_VariableReference() throws IOException {
+		AST sut = parseTestFile("variable-reference.icss");
+		AST exp = Fixtures.uncheckedVarRef();
+		assertEquals(exp,sut);
+	}
+
+	@Test
+	void testParse_PropertyAdditive() throws IOException {
+		AST sut = parseTestFile("property-additive.icss");
+		AST exp = Fixtures.uncheckedAdditive();
+		assertEquals(exp,sut);
+	}
 }

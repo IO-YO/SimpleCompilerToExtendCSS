@@ -1,5 +1,6 @@
 package nl.han.ica.icss.parser;
 
+import nl.han.ica.icss.ASTBuilder;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.BoolLiteral;
 import nl.han.ica.icss.ast.literals.ColorLiteral;
@@ -7,6 +8,7 @@ import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.literals.ScalarLiteral;
 import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
+import nl.han.ica.icss.ast.operations.SubOperation;
 import nl.han.ica.icss.ast.selectors.ClassSelector;
 import nl.han.ica.icss.ast.selectors.IdSelector;
 import nl.han.ica.icss.ast.selectors.TagSelector;
@@ -325,5 +327,55 @@ public class Fixtures {
 		);
 
 		return new AST(stylesheet);
+	}
+
+	public static AST unchecked_VariableAdditive() {
+		return ASTBuilder.stylesheet(
+				ASTBuilder.rule(
+						"p",
+						ASTBuilder.assign(
+								"Var",
+								new PixelLiteral(10)
+						),
+						ASTBuilder.decl(
+								"width",
+								new SubOperation(
+										new VariableReference("Var"),
+										new PixelLiteral(20)
+								)
+						)
+				)
+		);
+	}
+
+	public static AST uncheckedVarRef() {
+		return ASTBuilder.stylesheet(
+				ASTBuilder.rule(
+						"p",
+						ASTBuilder.assign(
+								"Var",
+								new PixelLiteral(10)
+						),
+						ASTBuilder.declVar(
+								"width",
+								"Var"
+						)
+				)
+		);
+	}
+
+	public static AST uncheckedAdditive() {
+		return ASTBuilder.stylesheet(
+				ASTBuilder.rule(
+						"p",
+						ASTBuilder.decl(
+								"width",
+								new AddOperation(
+										new PixelLiteral(10),
+										new PixelLiteral(20)
+								)
+						)
+				)
+		);
 	}
 }

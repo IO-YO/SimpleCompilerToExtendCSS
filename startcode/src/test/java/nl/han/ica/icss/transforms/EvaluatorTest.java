@@ -58,6 +58,28 @@ class EvaluatorTest {
         assertEvaluatedCorrectly(pair);
     }
 
+    // --- TR01: Subtraction Evaluation ---
+
+    static Stream<Arguments> ExpressionSubtractionCases() {
+        return Stream.of(
+                Arguments.of(new EvalCase(
+                        "SubtractPixels",
+                        new AddOperation(new PixelLiteral(10), new PixelLiteral(-5)),
+                        new PixelLiteral(5)
+                )),
+                Arguments.of(new EvalCase(
+                        "SubtractPercentages",
+                        new AddOperation(new PercentageLiteral(50), new PercentageLiteral(-20)),
+                        new PercentageLiteral(30)
+                )),
+                Arguments.of(new EvalCase(
+                        "SubtractScalars",
+                        new AddOperation(new ScalarLiteral(100), new ScalarLiteral(-25)),
+                        new ScalarLiteral(75)
+                ))
+        );
+    }
+
 
     @Test
     @Tag("TR01")

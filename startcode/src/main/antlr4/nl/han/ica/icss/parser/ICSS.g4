@@ -6,7 +6,7 @@ stylesheet
     ;
 
 // --- Variable Assignment:
-// Var := 100px; ---
+// Var := 100px;
 variableAssignment
     : variableReference ASSIGNMENT_OPERATOR expression SEMICOLON
     ;
@@ -15,7 +15,7 @@ variableAssignment
 variableReference: CAPITAL_IDENT;
 
 // --- Style rules:
-// #id { width: 100px; } OR .class { color: #ff0000; }
+// #id { }
 stylerule
     : selector body
     ;
@@ -45,10 +45,9 @@ property
 // --- Expressions ---
 expression
     : expression (STAR) expression                      # multiplyOperation
-    | expression (MINUS | PLUS) expression              # addOperation
+    | expression (MINUS | PLUS) expression              # additiveOperation
     | literal                                           # literalExpression
     | variableReference                                 # variableReferenceExpression
-    | LPAREN expression RPAREN                          # parenAtom
     ;
 
 // --- Literal expressions ---

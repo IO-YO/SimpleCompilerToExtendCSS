@@ -5,6 +5,7 @@ import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
+import nl.han.ica.icss.ast.operations.SubOperation;
 import nl.han.ica.icss.ast.selectors.ClassSelector;
 import nl.han.ica.icss.ast.selectors.IdSelector;
 import nl.han.ica.icss.ast.selectors.TagSelector;
@@ -38,6 +39,15 @@ public class ASTListener extends ICSSBaseListener {
     @Override
     public void enterStylerule(ICSSParser.StyleruleContext ctx) {
         Stylerule rule = new Stylerule();
+        if (ctx.getChild(0).getText().startsWith(".")) {
+            rule.addChild(new ClassSelector(ctx.getChild(0).getText()));
+        }
+        else if (ctx.getChild(0).getText().startsWith("#")) {
+            rule.addChild(new IdSelector(ctx.getChild(0).getText()));
+        }
+        else {
+            rule.addChild(new TagSelector(ctx.getChild(0).getText()));
+        }
         nodeStack.push(rule);
     }
 
@@ -97,57 +107,21 @@ public class ASTListener extends ICSSBaseListener {
     }
 
     @Override
-    public void enterClassSelector(ICSSParser.ClassSelectorContext ctx) {
-        ClassSelector classSel = new ClassSelector(ctx.getText());
-        nodeStack.push(classSel);
+    public void enterMultiplyOperation(ICSSParser.MultiplyOperationContext ctx) {
+        MultiplyOperation multiplyOp = new MultiplyOperation();
+        nodeStack.push(multiplyOp);
     }
 
     @Override
-    public void exitClassSelector(ICSSParser.ClassSelectorContext ctx) {
-        ClassSelector classSel = (ClassSelector) nodeStack.pop();
-        nodeStack.peek().addChild(classSel);
-    }
-
-    @Override
-    public void enterIdSelector(ICSSParser.IdSelectorContext ctx) {
-        IdSelector idSel = new IdSelector(ctx.getText());
-        nodeStack.push(idSel);
-    }
-
-    @Override
-    public void exitIdSelector(ICSSParser.IdSelectorContext ctx) {
-        IdSelector idSel = (IdSelector) nodeStack.pop();
-        nodeStack.peek().addChild(idSel);
-    }
-
-    @Override
-    public void enterTagSelector(ICSSParser.TagSelectorContext ctx) {
-        TagSelector tagSel = new TagSelector(ctx.getText());
-        nodeStack.push(tagSel);
-    }
-
-    @Override
-    public void exitTagSelector(ICSSParser.TagSelectorContext ctx) {
-        TagSelector tagSel = (TagSelector) nodeStack.pop();
-        nodeStack.peek().addChild(tagSel);
-    }
-
-    @Override
-    public void enterAddOperation(ICSSParser.AddOperationContext ctx) {
+    public void enterAdditiveOperation(ICSSParser.AdditiveOperationContext ctx) {
         AddOperation addOp = new AddOperation();
         nodeStack.push(addOp);
     }
 
     @Override
-    public void exitAddOperation(ICSSParser.AddOperationContext ctx) {
+    public void exitAdditiveOperation(ICSSParser.AdditiveOperationContext ctx) {
         AddOperation addOp = (AddOperation) nodeStack.pop();
         nodeStack.peek().addChild(addOp);
-    }
-
-    @Override
-    public void enterMultiplyOperation(ICSSParser.MultiplyOperationContext ctx) {
-        MultiplyOperation multiplyOp = new MultiplyOperation();
-        nodeStack.push(multiplyOp);
     }
 
     @Override

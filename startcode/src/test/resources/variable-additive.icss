@@ -1,0 +1,4 @@
+p {
+    Var := 10px;
+    width: Var + 20px;
+}
