@@ -1,9 +1,7 @@
 package nl.han.ica.icss.transforms;
 
 import nl.han.ica.icss.ASTBuilder;
-import nl.han.ica.icss.ast.AST;
-import nl.han.ica.icss.ast.ASTNode;
-import nl.han.ica.icss.ast.VariableReference;
+import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.BoolLiteral;
 import nl.han.ica.icss.ast.literals.PercentageLiteral;
 import nl.han.ica.icss.ast.literals.PixelLiteral;
@@ -13,6 +11,7 @@ import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.operations.SubtractOperation;
 
 public class Fixtures {
+
 
     public record ASTPair(AST input, AST expected) {}
 
@@ -86,6 +85,22 @@ public class Fixtures {
 
         AST expected = ASTBuilder.stylesheet(
                 ASTBuilder.rule("p")
+        );
+
+        return new ASTPair(input, expected);
+    }
+
+    public static ASTPair expressionEval_Literals(Expression expression, Literal expectedLiteral) {
+        AST input = ASTBuilder.ruleWithPropertyDeclaration(
+                "p",
+                "width",
+                expression
+        );
+
+        AST expected = ASTBuilder.ruleWithPropertyDeclaration(
+                "p",
+                "width",
+                expectedLiteral
         );
 
         return new ASTPair(input, expected);

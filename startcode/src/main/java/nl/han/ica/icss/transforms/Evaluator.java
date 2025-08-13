@@ -45,6 +45,8 @@ public class Evaluator implements Transform {
             return new PixelLiteral(l.value + r.value);
         if (lhs instanceof PercentageLiteral l && rhs instanceof PercentageLiteral r)
             return new PercentageLiteral(l.value + r.value);
+        if (lhs instanceof ScalarLiteral l && rhs instanceof ScalarLiteral r)
+            return new ScalarLiteral(l.value + r.value);
 
         return null;
     }

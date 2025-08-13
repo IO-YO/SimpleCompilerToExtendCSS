@@ -1,12 +1,26 @@
 package nl.han.ica.icss.transforms;
 
+import nl.han.ica.icss.ast.Expression;
+import nl.han.ica.icss.ast.Literal;
+import nl.han.ica.icss.ast.literals.PercentageLiteral;
+import nl.han.ica.icss.ast.literals.PixelLiteral;
+import nl.han.ica.icss.ast.literals.ScalarLiteral;
+import nl.han.ica.icss.ast.operations.AddOperation;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class EvaluatorTest {
+
+    public record EvalCase(String name, Expression input, Literal Expected) {
+    }
 
     private void assertEvaluatedCorrectly(Fixtures.ASTPair test) {
         new Evaluator().apply(test.input());
@@ -15,12 +29,35 @@ class EvaluatorTest {
 
     // --- TR01: Expression Evaluation ---
 
-    @Test
-    @Tag("TR01")
-    @DisplayName("TR01: Addition of pixel literals is evaluated correctly")
-    void TR01_AddPixels_EvaluatesCorrectly() {
-        assertEvaluatedCorrectly(Fixtures.expressionEval_addPixels());
+    static Stream<Arguments> ExpressionAdditionCases() {
+        return Stream.of(
+                Arguments.of(new EvalCase(
+                        "AddPixels",
+                        new AddOperation(new PixelLiteral(1), new PixelLiteral(1)),
+                        new PixelLiteral(2)
+                )),
+                Arguments.of(new EvalCase(
+                        "AddPercentages",
+                        new AddOperation(new PercentageLiteral(10), new PercentageLiteral(20)),
+                        new PercentageLiteral(30)
+                )),
+                Arguments.of(new EvalCase(
+                        "AddScalars",
+                        new AddOperation(new ScalarLiteral(10), new ScalarLiteral(20)),
+                        new ScalarLiteral(30)
+                ))
+        );
     }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("ExpressionAdditionCases")
+    @Tag("TR01")
+    @DisplayName("TR01: Addition expressions are evaluated correctly")
+    void TR01_Addition_EvaluatesCorrectly(EvalCase testCase) {
+        Fixtures.ASTPair pair = Fixtures.expressionEval_Literals(testCase.input(), testCase.Expected());
+        assertEvaluatedCorrectly(pair);
+    }
+
 
     @Test
     @Tag("TR01")

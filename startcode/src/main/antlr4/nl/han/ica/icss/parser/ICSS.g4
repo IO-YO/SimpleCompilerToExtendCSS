@@ -6,7 +6,7 @@ stylesheet
     ;
 
 // --- Variable Assignment:
-// like Var := 100px; ---
+// Var := 100px; ---
 variableAssignment
     : variableReference ASSIGNMENT_OPERATOR expression SEMICOLON
     ;
