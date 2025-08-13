@@ -6,6 +6,7 @@ import nl.han.ica.icss.ast.literals.PercentageLiteral;
 import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.literals.ScalarLiteral;
 import nl.han.ica.icss.ast.operations.AddOperation;
+import nl.han.ica.icss.ast.operations.SubtractOperation;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,16 @@ class EvaluatorTest {
                         "AddScalars",
                         new AddOperation(new ScalarLiteral(10), new ScalarLiteral(20)),
                         new ScalarLiteral(30)
+                )),
+                Arguments.of(new EvalCase(
+                        "AddMultiplePixels",
+                        new AddOperation(
+                                new AddOperation(
+                                        new PixelLiteral(5),
+                                        new PixelLiteral(10)),
+                                new PixelLiteral(15)
+                        ),
+                        new PixelLiteral(30)
                 ))
         );
     }
@@ -54,7 +65,7 @@ class EvaluatorTest {
     @Tag("TR01")
     @DisplayName("TR01: Addition expressions are evaluated correctly")
     void TR01_Addition_EvaluatesCorrectly(EvalCase testCase) {
-        Fixtures.ASTPair pair = Fixtures.expressionEval_Literals(testCase.input(), testCase.Expected());
+        Fixtures.ASTPair pair = Fixtures.createASTPairForLiteralExpression(testCase.input(), testCase.Expected());
         assertEvaluatedCorrectly(pair);
     }
 
@@ -64,20 +75,99 @@ class EvaluatorTest {
         return Stream.of(
                 Arguments.of(new EvalCase(
                         "SubtractPixels",
-                        new AddOperation(new PixelLiteral(10), new PixelLiteral(-5)),
+                        new SubtractOperation(new PixelLiteral(10), new PixelLiteral(5)),
                         new PixelLiteral(5)
                 )),
                 Arguments.of(new EvalCase(
                         "SubtractPercentages",
-                        new AddOperation(new PercentageLiteral(50), new PercentageLiteral(-20)),
+                        new SubtractOperation(new PercentageLiteral(50), new PercentageLiteral(20)),
                         new PercentageLiteral(30)
                 )),
                 Arguments.of(new EvalCase(
                         "SubtractScalars",
-                        new AddOperation(new ScalarLiteral(100), new ScalarLiteral(-25)),
-                        new ScalarLiteral(75)
+                        new SubtractOperation(new ScalarLiteral(100), new ScalarLiteral(105)),
+                        new ScalarLiteral(-5)
+                )),
+                Arguments.of(new EvalCase(
+                        "SubtractMultiplePixels",
+                        new SubtractOperation(
+                                new SubtractOperation(
+                                        new PixelLiteral(50),
+                                        new PixelLiteral(20)),
+                                new PixelLiteral(10)
+                        ),
+                        new PixelLiteral(20)
                 ))
         );
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("ExpressionSubtractionCases")
+    @Tag("TR01")
+    @DisplayName("TR01: Subtraction expressions are evaluated correctly")
+    void TR01_Subtraction_EvaluatesCorrectly(EvalCase testCase) {
+        Fixtures.ASTPair pair = Fixtures.createASTPairForLiteralExpression(testCase.input(), testCase.Expected());
+        assertEvaluatedCorrectly(pair);
+    }
+
+    // --- TR01: Subtraction and Addition Evaluation ---
+
+    /**
+     * Tests that subtraction expressions are evaluated correctly.
+     * This includes cases where the left-hand side is greater than, equal to, or less than the right-hand side.
+     */
+
+    static Stream<Arguments> ExpressionSubtractAndAdditionCases() {
+        return Stream.of(
+                Arguments.of(new EvalCase(
+                        "SubtractAndAddPixels",
+                        new AddOperation(
+                                new SubtractOperation(new PixelLiteral(20), new PixelLiteral(10)),
+                                new PixelLiteral(5)
+                        ),
+                        new PixelLiteral(15)
+                )),
+                Arguments.of(new EvalCase(
+                        "SubtractAndAddPercentages",
+                        new AddOperation(
+                                new SubtractOperation(new PercentageLiteral(30), new PercentageLiteral(10)),
+                                new PercentageLiteral(5)
+                        ),
+                        new PercentageLiteral(25)
+                )),
+                Arguments.of(new EvalCase(
+                        "SubtractAndAddScalars",
+                        new AddOperation(
+                                new SubtractOperation(new ScalarLiteral(50), new ScalarLiteral(20)),
+                                new ScalarLiteral(10)
+                        ),
+                        new ScalarLiteral(40)
+                )),
+                Arguments.of(
+                        new EvalCase(
+                                "SubtractAndAddMultiplePixels",
+                                new AddOperation(
+                                        new SubtractOperation(
+                                                new AddOperation(
+                                                        new PixelLiteral(30),
+                                                        new PixelLiteral(20)),
+                                                new PixelLiteral(10)
+                                        ),
+                                        new PixelLiteral(5)
+                                ),
+                                new PixelLiteral(45)
+                        )
+                )
+        );
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("ExpressionSubtractAndAdditionCases")
+    @Tag("TR01")
+    @DisplayName("TR01: Subtraction and addition expressions are evaluated correctly")
+    void TR01_SubtractAndAdd_EvaluatesCorrectly(EvalCase testCase) {
+        Fixtures.ASTPair pair = Fixtures.createASTPairForLiteralExpression(testCase.input(), testCase.Expected());
+        assertEvaluatedCorrectly(pair);
     }
 
 

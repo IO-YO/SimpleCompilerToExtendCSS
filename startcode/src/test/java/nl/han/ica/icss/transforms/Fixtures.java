@@ -90,7 +90,7 @@ public class Fixtures {
         return new ASTPair(input, expected);
     }
 
-    public static ASTPair expressionEval_Literals(Expression expression, Literal expectedLiteral) {
+    public static ASTPair createASTPairForLiteralExpression(Expression expression, Literal expectedLiteral) {
         AST input = ASTBuilder.ruleWithPropertyDeclaration(
                 "p",
                 "width",

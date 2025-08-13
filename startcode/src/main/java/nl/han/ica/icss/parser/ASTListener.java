@@ -5,7 +5,7 @@ import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
-import nl.han.ica.icss.ast.operations.SubOperation;
+import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.selectors.ClassSelector;
 import nl.han.ica.icss.ast.selectors.IdSelector;
 import nl.han.ica.icss.ast.selectors.TagSelector;
@@ -114,14 +114,26 @@ public class ASTListener extends ICSSBaseListener {
 
     @Override
     public void enterAdditiveOperation(ICSSParser.AdditiveOperationContext ctx) {
-        AddOperation addOp = new AddOperation();
-        nodeStack.push(addOp);
+        if(ctx.PLUS() != null) {
+            Operation addOperation = new AddOperation();
+            nodeStack.push(addOperation);
+        }
+        else {
+            Operation subtractOperation = new SubtractOperation();
+            nodeStack.push(subtractOperation);
+        }
     }
 
     @Override
     public void exitAdditiveOperation(ICSSParser.AdditiveOperationContext ctx) {
-        AddOperation addOp = (AddOperation) nodeStack.pop();
-        nodeStack.peek().addChild(addOp);
+        if(ctx.PLUS() != null) {
+            Operation addOperation = (AddOperation) nodeStack.pop();
+            nodeStack.peek().addChild(addOperation);
+        }
+        else {
+            Operation subtractOperation = (SubtractOperation) nodeStack.pop();
+            nodeStack.peek().addChild(subtractOperation);
+        }
     }
 
     @Override

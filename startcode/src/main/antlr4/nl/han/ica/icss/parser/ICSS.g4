@@ -50,6 +50,7 @@ expression
     | variableReference                                 # variableReferenceExpression
     ;
 
+
 // --- Literal expressions ---
 literal
     : TRUE            # boolLiteral

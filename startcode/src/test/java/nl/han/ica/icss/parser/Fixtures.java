@@ -8,7 +8,7 @@ import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.literals.ScalarLiteral;
 import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
-import nl.han.ica.icss.ast.operations.SubOperation;
+import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.selectors.ClassSelector;
 import nl.han.ica.icss.ast.selectors.IdSelector;
 import nl.han.ica.icss.ast.selectors.TagSelector;
@@ -339,7 +339,7 @@ public class Fixtures {
 						),
 						ASTBuilder.decl(
 								"width",
-								new SubOperation(
+								new SubtractOperation(
 										new VariableReference("Var"),
 										new PixelLiteral(20)
 								)

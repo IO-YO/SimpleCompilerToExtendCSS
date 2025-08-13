@@ -34,6 +34,19 @@ public class Evaluator implements Transform {
     private Literal evaluate(Expression expr) {
         if (expr instanceof Literal lit) return lit;
         if (expr instanceof AddOperation op) return evaluateAdd(op);
+        if (expr instanceof SubtractOperation sub) return evaluateSubtract(sub);
+        return null;
+    }
+
+    private Literal evaluateSubtract(SubtractOperation sub) {
+        Literal lhs = evaluate(sub.lhs);
+        Literal rhs = evaluate(sub.rhs);
+        if (lhs instanceof PixelLiteral l && rhs instanceof PixelLiteral r)
+            return new PixelLiteral(l.value - r.value);
+        if (lhs instanceof PercentageLiteral l && rhs instanceof PercentageLiteral r)
+            return new PercentageLiteral(l.value - r.value);
+        if (lhs instanceof ScalarLiteral l && rhs instanceof ScalarLiteral r)
+            return new ScalarLiteral(l.value - r.value);
         return null;
     }
 
@@ -50,4 +63,5 @@ public class Evaluator implements Transform {
 
         return null;
     }
+
 }
