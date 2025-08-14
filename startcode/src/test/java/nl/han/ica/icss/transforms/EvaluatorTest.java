@@ -1,5 +1,6 @@
 package nl.han.ica.icss.transforms;
 
+import nl.han.ica.icss.ast.ASTNode;
 import nl.han.ica.icss.ast.Expression;
 import nl.han.ica.icss.ast.Literal;
 import nl.han.ica.icss.ast.literals.PercentageLiteral;
@@ -8,13 +9,14 @@ import nl.han.ica.icss.ast.literals.ScalarLiteral;
 import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.operations.SubtractOperation;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,6 +24,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class EvaluatorTest {
 
     public record EvalCase(String name, Expression input, Literal Expected) {
+    }
+
+    public record EvalIfCase(String name, Expression condition, ASTNode[] ifBody, ASTNode[] expectedBody) {
     }
 
     private void assertEvaluatedCorrectly(Fixtures.ASTPair test) {
@@ -66,7 +71,7 @@ class EvaluatorTest {
     @Tag("TR01")
     @DisplayName("TR01: Addition expressions are evaluated correctly")
     void TR01_Addition_EvaluatesCorrectly(EvalCase testCase) {
-        Fixtures.ASTPair pair = Fixtures.createASTPairForLiteralExpression(testCase.input(), testCase.Expected());
+        Fixtures.ASTPair pair = Fixtures.createExpressionEvalPair(testCase.input(), testCase.Expected());
         assertEvaluatedCorrectly(pair);
     }
 
@@ -107,7 +112,7 @@ class EvaluatorTest {
     @Tag("TR01")
     @DisplayName("TR01: Subtraction expressions are evaluated correctly")
     void TR01_Subtraction_EvaluatesCorrectly(EvalCase testCase) {
-        Fixtures.ASTPair pair = Fixtures.createASTPairForLiteralExpression(testCase.input(), testCase.Expected());
+        Fixtures.ASTPair pair = Fixtures.createExpressionEvalPair(testCase.input(), testCase.Expected());
         assertEvaluatedCorrectly(pair);
     }
 
@@ -167,7 +172,7 @@ class EvaluatorTest {
     @Tag("TR01")
     @DisplayName("TR01: Subtraction and addition expressions are evaluated correctly")
     void TR01_SubtractAndAdd_EvaluatesCorrectly(EvalCase testCase) {
-        Fixtures.ASTPair pair = Fixtures.createASTPairForLiteralExpression(testCase.input(), testCase.Expected());
+        Fixtures.ASTPair pair = Fixtures.createExpressionEvalPair(testCase.input(), testCase.Expected());
         assertEvaluatedCorrectly(pair);
     }
 
@@ -217,7 +222,7 @@ class EvaluatorTest {
     @Tag("TR01")
     @DisplayName("TR01: Multiplication expressions are evaluated correctly")
     void TR01_Multiplication_EvaluatesCorrectly(EvalCase testCase) {
-        Fixtures.ASTPair pair = Fixtures.createASTPairForLiteralExpression(testCase.input(), testCase.Expected());
+        Fixtures.ASTPair pair = Fixtures.createExpressionEvalPair(testCase.input(), testCase.Expected());
         assertEvaluatedCorrectly(pair);
     }
 
@@ -283,10 +288,31 @@ class EvaluatorTest {
     @Tag("TR01")
     @DisplayName("TR01: Mixed operations (add, subtract, multiply) are evaluated correctly")
     void TR01_MixedOperations_EvaluatesCorrectly(EvalCase testCase) {
-        Fixtures.ASTPair pair = Fixtures.createASTPairForLiteralExpression(testCase.input(), testCase.Expected());
+        Fixtures.ASTPair pair = Fixtures.createExpressionEvalPair(testCase.input(), testCase.Expected());
         assertEvaluatedCorrectly(pair);
     }
 
     // --- TR02: If/Else Evaluation ---
+
+    public record EvalConditionalRuleCase(String name, Supplier<Fixtures.ASTPair> build) {
+        @Override
+        public @NotNull String toString() {
+            return name;
+        }
+    }
+
+    static Stream<Arguments> IfElseCases() {
+        return null;
+    }
+
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("IfElseCases")
+    @Tag("TR02")
+    @DisplayName("TR02: If/Else expressions are evaluated correctly")
+    void TR02_IfElse_EvaluatesCorrectly(EvalConditionalRuleCase testCase) {
+        Fixtures.ASTPair pair = testCase.build().get();
+        assertEvaluatedCorrectly(pair);
+    }
 
 }
