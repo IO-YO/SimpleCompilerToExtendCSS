@@ -2,10 +2,10 @@ package nl.han.ica.icss.transforms;
 
 import nl.han.ica.icss.ASTBuilder;
 import nl.han.ica.icss.ast.*;
-import nl.han.ica.icss.ast.literals.BoolLiteral;
+import nl.han.ica.icss.ast.literals.*;
+import org.jetbrains.annotations.NotNull;
 
 public class Fixtures {
-
 
     public record ASTPair(AST input, AST expected) {
     }
@@ -24,63 +24,129 @@ public class Fixtures {
         );
 
         return new ASTPair(input, expected);
-
     }
 
-    private static ASTNode[] concat(ASTNode[] a, ASTNode[] b) {
-        ASTNode[] out = new ASTNode[a.length + b.length];
-        System.arraycopy(a, 0, out, 0, a.length);
-        System.arraycopy(b, 0, out, a.length, b.length);
-        return out;
-    }
+    public static ASTPair createConditionalRulePair(
+            @NotNull Expression condition,
+            @NotNull ASTNode[] prefix,
+            @NotNull ASTNode[] ifBody,
+            @NotNull ASTNode[] elseBody,
+            @NotNull ASTNode[] suffix,
+            @NotNull ASTNode[] expectedBody
+    ) {
 
-    /**
-     * Creates a pair of ASTs representing a conditional rule. Constructs an input AST
-     * with a conditional clause embedded within a rule and an expected AST to evaluate
-     * the transformation result.
-     *
-     * @param condition the conditional expression for the rule. Determines the condition
-     *                  under which the rule applies.
-     * @param prefix an array of AST nodes to be placed before the conditional clause in the rule.
-     * @param ifBody an array of AST nodes to represent the "if" body of the conditional clause.
-     * @param elseBodyOrNull an optional array of AST nodes to represent the "else" body, if any.
-     *                       May be null if no "else" clause is present.
-     * @param suffix an array of AST nodes to be placed after the conditional clause in the rule.
-     * @param expectedBody an array of AST nodes representing the expected outcome or structure
-     *                     of the rule's transformation.
-     * @return an ASTPair object containing the input AST and the expected AST.
-     */
-    public static ASTPair createConditionalRulePair(Expression condition,
-                                                    ASTNode[] prefix,
-                                                    ASTNode[] ifBody,
-                                                    ASTNode[] elseBodyOrNull,
-                                                    ASTNode[] suffix,
-                                                    ASTNode[] expectedBody) {
-
-        // If there is no else body, we create a simple if clause
-        ASTNode ifNode = (elseBodyOrNull == null)
+        ASTNode ifNode = (elseBody.length == 0)
                 ? ASTBuilder.ifClause(condition, ifBody)
-                : ASTBuilder.ifClauseWithElse(condition, ifBody, elseBodyOrNull);
+                : ASTBuilder.ifClauseWithElse(condition, ifBody, elseBody);
 
-        // Concatenate the prefix, ifNode, and suffix to form the full body
-        ASTNode[] withIf   = concat(prefix, new ASTNode[]{ ifNode });
-        ASTNode[] fullBody = concat(withIf, suffix);
+        ASTNode[] ruleBody = RuleBody
+                .start(prefix)
+                .then(ifNode)
+                .thenAll(suffix)
+                .toArray();
 
-        AST input = ASTBuilder.stylesheet(ASTBuilder.rule("p", fullBody));
-        AST expected = ASTBuilder.stylesheet(ASTBuilder.rule("p", expectedBody));
+        AST input = ASTBuilder.stylesheet(ASTBuilder.rule("p", ruleBody));
+        AST expected = ASTBuilder.stylesheet(ASTBuilder.rule("p", cloneBody(expectedBody)));
+
         return new ASTPair(input, expected);
     }
 
-    public static ASTPair createConditionalRulePair(Expression condition,
-                                                    ASTNode[] prefix,
-                                                    ASTNode[] ifBody,
-                                                    ASTNode[] suffix,
-                                                    ASTNode[] expectedBody) {
-        return createConditionalRulePair(condition, prefix, ifBody, null, suffix, expectedBody);
+
+    public static ASTPair createConditionalRulePair(
+            @NotNull Expression condition,
+            @NotNull ASTNode[] prefix,
+            @NotNull ASTNode[] ifBody,
+            @NotNull ASTNode[] suffix,
+            @NotNull ASTNode[] expectedBody
+    ) {
+        return createConditionalRulePair(
+                condition,
+                prefix,
+                ifBody,
+                new ASTNode[0],
+                suffix,
+                expectedBody
+        );
     }
-    public static ASTPair createConditionalRulePair(Expression condition,
-                                                    ASTNode[] ifBody,
-                                                    ASTNode[] expectedBody) {
-        return createConditionalRulePair(condition, new ASTNode[0], ifBody, null, new ASTNode[0], expectedBody);
+
+    public static ASTPair createConditionalRulePair(
+            @NotNull Expression condition,
+            @NotNull ASTNode[] ifBody,
+            @NotNull ASTNode[] expectedBody
+    ) {
+        return createConditionalRulePair(
+                condition,
+                new ASTNode[0],
+                ifBody,
+                new ASTNode[0],
+                new ASTNode[0],
+                expectedBody
+        );
+    }
+
+    public static ASTPair createConditionalRulePair(
+            boolean condition,
+            @NotNull ASTNode[] ifBody
+    ) {
+
+        ASTNode[] pickedIf = condition ? ifBody : new ASTNode[0];
+
+        return createConditionalRulePair(
+                new BoolLiteral(condition),
+                new ASTNode[0],
+                ifBody,
+                new ASTNode[0],
+                new ASTNode[0],
+                pickedIf
+        );
+    }
+
+    private static ASTNode[] cloneBody(ASTNode[] body) {
+        if (body == null || body.length == 0) return new ASTNode[0];
+        ASTNode[] out = new ASTNode[body.length];
+        for (int i = 0; i < body.length; i++)
+            out[i] = cloneNode(body[i]);
+        return out;
+    }
+
+    private static ASTNode cloneNode(ASTNode node) {
+        if (node instanceof Declaration d) {
+            String prop = d.property.name;
+            if (d.expression instanceof PixelLiteral p)
+                return ASTBuilder.decl(prop, new PixelLiteral(p.value));
+            if (d.expression instanceof PercentageLiteral p)
+                return ASTBuilder.decl(prop, new PercentageLiteral(p.value));
+            if (d.expression instanceof ScalarLiteral s)
+                return ASTBuilder.decl(prop, new ScalarLiteral(s.value));
+            if (d.expression instanceof BoolLiteral b)
+                return ASTBuilder.decl(prop, new BoolLiteral(b.value));
+            if (d.expression instanceof ColorLiteral c)
+                return ASTBuilder.decl(prop, new ColorLiteral(c.value));
+        }
+        return node;
+    }
+
+    private static final class RuleBody {
+        private final java.util.ArrayList<ASTNode> nodes = new java.util.ArrayList<>();
+
+        static RuleBody start(ASTNode[] prefix) {
+            RuleBody rb = new RuleBody();
+            if (prefix != null) java.util.Collections.addAll(rb.nodes, prefix);
+            return rb;
+        }
+
+        RuleBody then(ASTNode node) {
+            nodes.add(node);
+            return this;
+        }
+
+        RuleBody thenAll(ASTNode[] more) {
+            if (more != null) java.util.Collections.addAll(nodes, more);
+            return this;
+        }
+
+        ASTNode[] toArray() {
+            return nodes.toArray(new ASTNode[0]);
+        }
     }
 }

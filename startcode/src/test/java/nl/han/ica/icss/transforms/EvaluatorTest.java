@@ -3,6 +3,7 @@ package nl.han.ica.icss.transforms;
 import nl.han.ica.icss.ast.ASTNode;
 import nl.han.ica.icss.ast.Expression;
 import nl.han.ica.icss.ast.Literal;
+import nl.han.ica.icss.ast.literals.BoolLiteral;
 import nl.han.ica.icss.ast.literals.PercentageLiteral;
 import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.literals.ScalarLiteral;
@@ -302,9 +303,27 @@ class EvaluatorTest {
     }
 
     static Stream<Arguments> IfElseCases() {
-        return null;
+        return Stream.of(
+                Arguments.of(
+                        new EvalConditionalRuleCase(
+                                "IfTrue",
+                                () -> Fixtures.createConditionalRulePair(
+                                        true,
+                                        new ASTNode[]{new PixelLiteral(10)}
+                                )
+                        )
+                ),
+                Arguments.of(
+                        new EvalConditionalRuleCase(
+                                "IfFalse",
+                                () -> Fixtures.createConditionalRulePair(
+                                        false,
+                                        new ASTNode[]{new PixelLiteral(10)}
+                                )
+                        )
+                )
+        );
     }
-
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("IfElseCases")
