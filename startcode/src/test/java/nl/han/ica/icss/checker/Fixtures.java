@@ -60,7 +60,7 @@ public class Fixtures {
     public static AST variableDeclaredInsideElse_thenUsedOutside_shouldFail() {
         return ASTBuilder.stylesheet(
                 ASTBuilder.rule("p",
-                        ASTBuilder.ifClauseWithElse(
+                        ASTBuilder.ifElseClause(
                                 new BoolLiteral(true),
                                 ASTBuilder.assign("ScopedElseVar", new PixelLiteral(20))
                         ),

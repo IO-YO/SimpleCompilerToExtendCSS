@@ -10,6 +10,7 @@ import nl.han.ica.icss.ast.literals.ScalarLiteral;
 import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.operations.SubtractOperation;
+import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -306,7 +307,7 @@ class EvaluatorTest {
         return Stream.of(
                 Arguments.of(
                         new EvalConditionalRuleCase(
-                                "IfTrue",
+                                "a: If True",
                                 () -> Fixtures.createConditionalRulePair(
                                         true,
                                         new ASTNode[]{new PixelLiteral(10)}
@@ -315,7 +316,18 @@ class EvaluatorTest {
                 ),
                 Arguments.of(
                         new EvalConditionalRuleCase(
-                                "IfFalse",
+                                "a: If True with Prefix Suffix",
+                                () -> Fixtures.createConditionalRulePair(
+                                        true,
+                                        new ASTNode[]{new PixelLiteral(10)},
+                                        new ASTNode[]{new PixelLiteral(20)},
+                                        new ASTNode[]{new PixelLiteral(30)}
+                                )
+                        )
+                ),
+                Arguments.of(
+                        new EvalConditionalRuleCase(
+                                "a: If False",
                                 () -> Fixtures.createConditionalRulePair(
                                         false,
                                         new ASTNode[]{new PixelLiteral(10)}
@@ -324,11 +336,32 @@ class EvaluatorTest {
                 ),
                 Arguments.of(
                         new EvalConditionalRuleCase(
-                                "IfElseTrue",
+                                "a: If False with Prefix Suffix",
+                                () -> Fixtures.createConditionalRulePair(
+                                        false,
+                                        new ASTNode[]{new PixelLiteral(10)},
+                                        new ASTNode[]{new PixelLiteral(20)},
+                                        new ASTNode[]{new PixelLiteral(30)}
+                                )
+                        )
+                ),
+                Arguments.of(
+                        new EvalConditionalRuleCase(
+                                "b: If-Else True",
                                 () -> Fixtures.createConditionalRulePair(
                                         true,
                                         new ASTNode[]{new PixelLiteral(10)},
-                                        new ASTNode[]{new PixelLiteral(10)}
+                                        new ASTNode[]{new PixelLiteral(20)}
+                                )
+                        )
+                ),
+                Arguments.of(
+                        new EvalConditionalRuleCase(
+                                "b: If-Else False",
+                                () -> Fixtures.createConditionalRulePair(
+                                        false,
+                                        new ASTNode[]{new PixelLiteral(10)},
+                                        new ASTNode[]{new PixelLiteral(20)}
                                 )
                         )
                 )

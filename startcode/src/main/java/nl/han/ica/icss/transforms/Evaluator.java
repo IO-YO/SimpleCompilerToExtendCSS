@@ -5,26 +5,45 @@ import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.operations.*;
 import nl.han.ica.icss.scoping.ScopeManager;
 
+import java.util.ArrayList;
+
 import static nl.han.ica.icss.scoping.ASTScopeRules.isScopingNode;
 
 public class Evaluator implements Transform {
 
     private ScopeManager<Literal> scopeManager;
+    private ArrayList<ASTNode> nodesToRemove;
 
     @Override
     public void apply(AST ast) {
         this.scopeManager = new ScopeManager<>();
+        this.nodesToRemove = new ArrayList<>();
         transform(ast.root);
+
+        for(ASTNode child : nodesToRemove) {
+            ast.root.removeChild(child);
+        }
     }
 
     private void transform(ASTNode node) {
         if (isScopingNode(node)) scopeManager.enterScope();
 
-        if (node instanceof Declaration decl) handleDeclaration(decl);
+        if (node instanceof Declaration decl)
+            handleDeclaration(decl);
+        if (node instanceof IfClause ifNode) transformIfClause(ifNode);
 
         node.getChildren().forEach(this::transform);
 
         if (isScopingNode(node)) scopeManager.exitScope();
+    }
+
+    private void transformIfClause(IfClause ifNode) {
+        Expression expr = ifNode.conditionalExpression;
+        if (expr instanceof BoolLiteral) {
+            boolean condition = ((BoolLiteral) expr).value;
+            if (!condition) nodesToRemove.add(ifNode);
+        }
+
     }
 
     private void handleDeclaration(Declaration decl) {

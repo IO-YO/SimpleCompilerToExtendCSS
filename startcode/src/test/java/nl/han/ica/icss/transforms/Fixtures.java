@@ -37,7 +37,7 @@ public class Fixtures {
 
         ASTNode ifNode = (elseBody.length == 0)
                 ? ASTBuilder.ifClause(condition, ifBody)
-                : ASTBuilder.ifClauseWithElse(condition, ifBody, elseBody);
+                : ASTBuilder.ifElseClause(condition, ifBody, elseBody);
 
         ASTNode[] ruleBody = RuleBody
                 .start(prefix)
@@ -97,6 +97,22 @@ public class Fixtures {
                 new ASTNode[0],
                 new ASTNode[0],
                 new ASTNode[0]
+        );
+    }
+
+    public static ASTPair createConditionalRulePair(
+            boolean condition,
+            @NotNull ASTNode[] ifBody,
+            @NotNull ASTNode[] prefix,
+            @NotNull ASTNode[] suffix
+    ) {
+
+        return createConditionalRulePair(
+                condition,
+                ifBody,
+                new ASTNode[0],
+                prefix,
+                suffix
         );
     }
 
