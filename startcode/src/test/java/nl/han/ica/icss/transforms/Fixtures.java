@@ -28,11 +28,11 @@ public class Fixtures {
 
     public static ASTPair createConditionalRulePair(
             @NotNull Expression condition,
-            @NotNull ASTNode[] prefix,
             @NotNull ASTNode[] ifBody,
             @NotNull ASTNode[] elseBody,
-            @NotNull ASTNode[] suffix,
-            @NotNull ASTNode[] expectedBody
+            @NotNull ASTNode[] expectedBody,
+            @NotNull ASTNode[] prefix,
+            @NotNull ASTNode[] suffix
     ) {
 
         ASTNode ifNode = (elseBody.length == 0)
@@ -51,36 +51,38 @@ public class Fixtures {
         return new ASTPair(input, expected);
     }
 
-
     public static ASTPair createConditionalRulePair(
-            @NotNull Expression condition,
-            @NotNull ASTNode[] prefix,
+            boolean condition,
             @NotNull ASTNode[] ifBody,
-            @NotNull ASTNode[] suffix,
-            @NotNull ASTNode[] expectedBody
+            @NotNull ASTNode[] elseBody,
+            @NotNull ASTNode[] prefix,
+            @NotNull ASTNode[] suffix
     ) {
+
+        ASTNode[] pickedBody = condition ? ifBody : elseBody;
+
         return createConditionalRulePair(
-                condition,
-                prefix,
+                new BoolLiteral(condition),
                 ifBody,
-                new ASTNode[0],
-                suffix,
-                expectedBody
+                elseBody,
+                pickedBody,
+                prefix,
+                suffix
         );
     }
 
     public static ASTPair createConditionalRulePair(
-            @NotNull Expression condition,
+            boolean condition,
             @NotNull ASTNode[] ifBody,
-            @NotNull ASTNode[] expectedBody
+            @NotNull ASTNode[] elseBody
     ) {
+
         return createConditionalRulePair(
                 condition,
-                new ASTNode[0],
                 ifBody,
+                elseBody,
                 new ASTNode[0],
-                new ASTNode[0],
-                expectedBody
+                new ASTNode[0]
         );
     }
 
@@ -89,15 +91,12 @@ public class Fixtures {
             @NotNull ASTNode[] ifBody
     ) {
 
-        ASTNode[] pickedIf = condition ? ifBody : new ASTNode[0];
-
         return createConditionalRulePair(
-                new BoolLiteral(condition),
-                new ASTNode[0],
+                condition,
                 ifBody,
                 new ASTNode[0],
                 new ASTNode[0],
-                pickedIf
+                new ASTNode[0]
         );
     }
 

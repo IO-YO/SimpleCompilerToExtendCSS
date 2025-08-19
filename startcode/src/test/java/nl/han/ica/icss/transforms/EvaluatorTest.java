@@ -321,6 +321,16 @@ class EvaluatorTest {
                                         new ASTNode[]{new PixelLiteral(10)}
                                 )
                         )
+                ),
+                Arguments.of(
+                        new EvalConditionalRuleCase(
+                                "IfElseTrue",
+                                () -> Fixtures.createConditionalRulePair(
+                                        true,
+                                        new ASTNode[]{new PixelLiteral(10)},
+                                        new ASTNode[]{new PixelLiteral(10)}
+                                )
+                        )
                 )
         );
     }
