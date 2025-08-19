@@ -1,7 +1,10 @@
 package nl.han.ica.icss;
 
 import nl.han.ica.icss.ast.*;
-import nl.han.ica.icss.ast.literals.BoolLiteral;
+import nl.han.ica.icss.ast.literals.*;
+import nl.han.ica.icss.ast.operations.AddOperation;
+import nl.han.ica.icss.ast.operations.MultiplyOperation;
+import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.selectors.TagSelector;
 
 import java.util.ArrayList;
@@ -12,6 +15,43 @@ import java.util.Arrays;
  * such as stylesheets, style rules, declarations, and conditional clauses.
  */
 public class ASTBuilder {
+
+    // === Literal Helpers ===
+    public static PixelLiteral px(int value) {
+        return new PixelLiteral(value);
+    }
+
+    public static PercentageLiteral percent(int value) {
+        return new PercentageLiteral(value);
+    }
+
+    public static ScalarLiteral scalar(int value) {
+        return new ScalarLiteral(value);
+    }
+
+    public static ColorLiteral color(String hexCode) {
+        return new ColorLiteral(hexCode);
+    }
+
+    public static BoolLiteral bool(boolean value) {
+        return new BoolLiteral(value);
+    }
+
+    public static VariableReference var(String name) {
+        return new VariableReference(name);
+    }
+
+    public static MultiplyOperation multiply(Expression a, Expression b){
+        return new MultiplyOperation(a, b);
+    }
+
+    public static AddOperation addition(Expression a, Expression b) {
+        return new AddOperation(a, b);
+    }
+
+    public static SubtractOperation subtract(Expression a, Expression b) {
+        return new SubtractOperation(a, b);
+    }
 
     public static AST stylesheet(ASTNode... rules) {
         Stylesheet sheet = new Stylesheet();
@@ -36,7 +76,7 @@ public class ASTBuilder {
         return decl;
     }
 
-    public static VariableAssignment assign(
+    public static VariableAssignment varAssignment(
             String name,
             Expression value
     ) {
@@ -54,6 +94,7 @@ public class ASTBuilder {
         decl.addChild(new VariableReference(varName));
         return decl;
     }
+
 
     public static IfClause ifClause(
             ASTNode bool,

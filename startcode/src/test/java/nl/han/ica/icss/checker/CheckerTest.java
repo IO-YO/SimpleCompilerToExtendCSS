@@ -1,8 +1,6 @@
 package nl.han.ica.icss.checker;
 
-import nl.han.ica.icss.ast.AST;
-import nl.han.ica.icss.ast.literals.PixelLiteral;
-import nl.han.ica.icss.ast.literals.ScalarLiteral;
+import nl.han.ica.icss.ast.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -11,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static nl.han.ica.icss.ASTBuilder.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CheckerTest {
@@ -21,10 +20,6 @@ class CheckerTest {
         return ast;
     }
 
-    /**
-     * Asserts that there is exactly one semantic error in the provided AST
-     * and that the error message contains the specified expected parts.
-     */
     private void assertSingleError(AST ast, String... expectedParts) {
         List<SemanticError> errors = getCleanErrors(ast);
 
@@ -46,7 +41,6 @@ class CheckerTest {
         }
     }
 
-    /** Helper to assert there are no errors. */
     private void assertNoErrors(AST ast) {
         List<SemanticError> errors = getCleanErrors(ast);
         if (!errors.isEmpty()) {
@@ -56,7 +50,6 @@ class CheckerTest {
         }
     }
 
-    /** Helper to retrieve cleaned error list. */
     private List<SemanticError> getCleanErrors(AST ast) {
         return ast.getErrors()
                 .stream()
@@ -64,15 +57,15 @@ class CheckerTest {
                 .collect(Collectors.toList());
     }
 
-    // ---------------------------
-    // CH01: Undefined Variable
-    // ---------------------------
-
     @Tag("CH01")
     @DisplayName("CH01: Undefined variable is rejected")
     @Test
     void CH01_UndefinedVariable_FailsWhenNotDeclared() {
-        AST ast = checkFixture(Fixtures.undefinedVariable());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", decl("width", var("DefaultWidth")))
+                )
+        );
         assertSingleError(ast, "ERROR", "Unknown variable", "DefaultWidth");
     }
 
@@ -80,7 +73,12 @@ class CheckerTest {
     @DisplayName("CH01: Referencing a declared variable succeeds")
     @Test
     void CH01_VariableDeclared_SucceedsWhenReferenced() {
-        AST ast = checkFixture(Fixtures.definedVariable());
+        AST ast = checkFixture(
+                stylesheet(
+                        varAssignment("DefaultWidth", px(10)),
+                        rule("p", decl("width", var("DefaultWidth")))
+                )
+        );
         assertNoErrors(ast);
     }
 
@@ -88,7 +86,12 @@ class CheckerTest {
     @DisplayName("CH01: Variable assignment can reference previously declared variable (correct)")
     @Test
     void CH01_VariableDeclaredWithAnotherVariable_Succeeds() {
-        AST ast = checkFixture(Fixtures.variableDeclaredWithAnotherVariable_Correct());
+        AST ast = checkFixture(
+                stylesheet(
+                        varAssignment("FirstVar", px(10)),
+                        varAssignment("SecondVar", var("FirstVar"))
+                )
+        );
         assertNoErrors(ast);
     }
 
@@ -96,27 +99,35 @@ class CheckerTest {
     @DisplayName("CH01: Variable assignment referencing undeclared variable fails")
     @Test
     void CH01_VariableDeclaredWithAnotherVariable_FailsWhenRefUndefined() {
-        AST ast = checkFixture(Fixtures.variableDeclaredWithAnotherVariable_Incorrect());
+        AST ast = checkFixture(
+                stylesheet(
+                        varAssignment("FirstVar", var("NotDeclaredVariable"))
+                )
+        );
         assertSingleError(ast, "ERROR", "NotDeclaredVariable");
     }
-
-    // CH04: Property Type Matching
 
     @Tag("CH04")
     @DisplayName("CH04: Scalar assigned to width is invalid")
     @Test
     void CH04_PropertyTypeMismatch_ScalarInWidth_Fails() {
-        String propertyWidth = "width";
-        ScalarLiteral literal = new ScalarLiteral(10);
-        AST ast = checkFixture(Fixtures.propertyDeclaration("p", propertyWidth, literal));
-        assertSingleError(ast, "ERROR", "SCALAR", propertyWidth);
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", decl("width", scalar(10)))
+                )
+        );
+        assertSingleError(ast, "ERROR", "SCALAR", "width");
     }
 
     @Tag("CH04")
     @DisplayName("CH04: Pixel assigned to width is valid")
     @Test
     void CH04_PropertyTypeMatch_PixelInWidth_Succeeds() {
-        AST ast = checkFixture(Fixtures.propertyDeclaration("p", "width", new PixelLiteral("100")));
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", decl("width", px(100)))
+                )
+        );
         assertNoErrors(ast);
     }
 
@@ -124,17 +135,27 @@ class CheckerTest {
     @DisplayName("CH04: Variable of wrong type used in property fails (PIXEL to color)")
     @Test
     void CH04_PropertyTypeMismatch_VariableWrongTypeInProperty_Fails() {
-        AST ast = checkFixture(Fixtures.definedVariableReferencedWithWrongType());
+        AST ast = checkFixture(
+                stylesheet(
+                        varAssignment("DefaultWidth", px(10)),
+                        rule("p", decl("color", var("DefaultWidth")))
+                )
+        );
         assertSingleError(ast, "ERROR:", "PIXEL", "color");
     }
-
-    // CH06: Scope Handling
 
     @Tag("CH06")
     @DisplayName("CH06: Variable declared in if must not leak outside (if branch)")
     @Test
     void CH06_VarDeclaredInsideIf_UsedOutside_Fails() {
-        AST ast = checkFixture(Fixtures.variableDeclaredInsideIf_thenUsedOutside_shouldFail());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p",
+                                ifClause(bool(true), varAssignment("ScopedVar", px(10))),
+                                decl("width", var("ScopedVar"))
+                        )
+                )
+        );
         assertSingleError(ast, "ERROR", "Unknown variable");
     }
 
@@ -142,7 +163,14 @@ class CheckerTest {
     @DisplayName("CH06: Variable declared in else must not leak outside (else branch)")
     @Test
     void CH06_VarDeclaredInsideElse_UsedOutside_Fails() {
-        AST ast = checkFixture(Fixtures.variableDeclaredInsideElse_thenUsedOutside_shouldFail());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p",
+                                ifElseClause(bool(true), varAssignment("ScopedElseVar", px(20))),
+                                decl("width", var("ScopedElseVar"))
+                        )
+                )
+        );
         assertSingleError(ast, "ERROR", "Unknown variable");
     }
 
@@ -150,17 +178,26 @@ class CheckerTest {
     @DisplayName("CH06: Variable declared outside if is usable inside")
     @Test
     void CH06_VarDeclaredOutsideIf_UsedInside_Succeeds() {
-        AST ast = checkFixture(Fixtures.variableDeclaredOutsideIf_thenUsedInside_shouldSucceed());
+        AST ast = checkFixture(
+                stylesheet(
+                        varAssignment("GlobalWidth", px(15)),
+                        rule("p",
+                                ifClause(bool(true), decl("width", var("GlobalWidth")))
+                        )
+                )
+        );
         assertNoErrors(ast);
     }
-
-    // CH05: If Condition Type Check
 
     @Tag("CH05")
     @DisplayName("CH05: If condition with boolean literal is valid")
     @Test
     void CH05_IfCondition_WithBooleanLiteral_Succeeds() {
-        AST ast = checkFixture(Fixtures.ifStatementWithBoolean_Correct());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", ifClause(bool(true), decl("width", px(10))))
+                )
+        );
         assertNoErrors(ast);
     }
 
@@ -168,7 +205,11 @@ class CheckerTest {
     @DisplayName("CH05: If condition with scalar is invalid")
     @Test
     void CH05_IfCondition_WithScalar_Fails() {
-        AST ast = checkFixture(Fixtures.ifStatementWithScalar_incorrect());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", ifClause(scalar(10), decl("width", px(10))))
+                )
+        );
         assertSingleError(ast, "ERROR", "SCALAR", "If-condition");
     }
 
@@ -176,7 +217,12 @@ class CheckerTest {
     @DisplayName("CH05: If condition with boolean variable reference is valid")
     @Test
     void CH05_IfCondition_WithVariableRef_Succeeds() {
-        AST ast = checkFixture(Fixtures.ifStatementVariableRef_Correct());
+        AST ast = checkFixture(
+                stylesheet(
+                        varAssignment("LightMode", bool(true)),
+                        rule("p", ifClause(var("LightMode"), decl("width", px(10))))
+                )
+        );
         assertNoErrors(ast);
     }
 
@@ -184,17 +230,24 @@ class CheckerTest {
     @DisplayName("CH05: If condition with non-boolean variable reference is invalid")
     @Test
     void CH05_IfCondition_WithVariableRef_FailsWhenNotBoolean() {
-        AST ast = checkFixture(Fixtures.ifStatementVariableRef_Incorrect());
+        AST ast = checkFixture(
+                stylesheet(
+                        varAssignment("LightMode", px(10)),
+                        rule("p", ifClause(var("LightMode"), decl("width", px(10))))
+                )
+        );
         assertSingleError(ast, "ERROR", "If-condition");
     }
-
-    // CH02: Operand Type Checks (+, -, * rules)
 
     @Tag("CH02")
     @DisplayName("CH02: Add scalar + scalar is valid")
     @Test
     void CH02_Add_ScalarPlusScalar_Succeeds() {
-        AST ast = checkFixture(Fixtures.addScalarAndScalar());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", decl("width", addition(scalar(10), scalar(5))))
+                )
+        );
         assertNoErrors(ast);
     }
 
@@ -202,7 +255,11 @@ class CheckerTest {
     @DisplayName("CH02: Add pixel + pixel is valid")
     @Test
     void CH02_Add_PixelPlusPixel_Succeeds() {
-        AST ast = checkFixture(Fixtures.addPixelAndPixel());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", decl("width", addition(px(10), px(5))))
+                )
+        );
         assertNoErrors(ast);
     }
 
@@ -210,7 +267,11 @@ class CheckerTest {
     @DisplayName("CH02: Add pixel + percentage is invalid")
     @Test
     void CH02_Add_PixelPlusPercentage_Fails() {
-        AST ast = checkFixture(Fixtures.addPixelAndPercentage());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", decl("width", addition(px(10), percent(5))))
+                )
+        );
         assertSingleError(ast, "Add", "PIXEL", "PERCENTAGE");
     }
 
@@ -218,7 +279,11 @@ class CheckerTest {
     @DisplayName("CH02: Subtract percentage - scalar is invalid")
     @Test
     void CH02_Subtract_PercentageMinusScalar_Fails() {
-        AST ast = checkFixture(Fixtures.subtractPercentageAndScalar());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", decl("width", subtract(percent(10), scalar(2))))
+                )
+        );
         assertSingleError(ast, "Subtract", "PERCENTAGE", "SCALAR");
     }
 
@@ -226,7 +291,11 @@ class CheckerTest {
     @DisplayName("CH02: Subtract scalar - scalar is valid")
     @Test
     void CH02_Subtract_ScalarMinusScalar_Succeeds() {
-        AST ast = checkFixture(Fixtures.subtractScalarAndScalar());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", decl("width", subtract(scalar(5), scalar(2))))
+                )
+        );
         assertNoErrors(ast);
     }
 
@@ -234,7 +303,11 @@ class CheckerTest {
     @DisplayName("CH02: Multiply scalar * pixel is valid")
     @Test
     void CH02_Multiply_ScalarTimesPixel_Succeeds() {
-        AST ast = checkFixture(Fixtures.multiplyScalarAndPixel());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", decl("width", multiply(scalar(2), px(10))))
+                )
+        );
         assertNoErrors(ast);
     }
 
@@ -242,7 +315,11 @@ class CheckerTest {
     @DisplayName("CH02: Multiply pixel * scalar is valid")
     @Test
     void CH02_Multiply_PixelTimesScalar_Succeeds() {
-        AST ast = checkFixture(Fixtures.multiplyPixelAndScalar());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", decl("width", multiply(px(10), scalar(2))))
+                )
+        );
         assertNoErrors(ast);
     }
 
@@ -250,7 +327,11 @@ class CheckerTest {
     @DisplayName("CH02: Multiply pixel * pixel is invalid")
     @Test
     void CH02_Multiply_PixelTimesPixel_Fails() {
-        AST ast = checkFixture(Fixtures.multiplyPixelAndPixel());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", decl("width", multiply(px(10), px(5))))
+                )
+        );
         assertSingleError(ast, "Multiply", "PIXEL", "PIXEL");
     }
 
@@ -258,17 +339,33 @@ class CheckerTest {
     @DisplayName("CH02: Nested complex operation with type mismatch is invalid (Subtract PIXEL, SCALAR)")
     @Test
     void CH02_NestedComplexOperation_TypeMismatch_Fails() {
-        AST ast = checkFixture(Fixtures.nestedComplexOperation());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p",
+                                decl("width",
+                                        addition(
+                                                subtract(
+                                                        multiply(px(10), scalar(10)),
+                                                        scalar(5)
+                                                ),
+                                                scalar(2)
+                                        )
+                                )
+                        )
+                )
+        );
         assertSingleError(ast, "Subtract", "PIXEL", "SCALAR");
     }
-
-    // CH03: Color Operation Check
 
     @Tag("CH03")
     @DisplayName("CH03: Any arithmetic operation involving color is invalid")
     @Test
     void CH03_ColorInOperation_AddColorAndPixel_Fails() {
-        AST ast = checkFixture(Fixtures.addColorAndPixel());
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", decl("color", addition(color("#ff0000"), px(10))))
+                )
+        );
         assertSingleError(ast, "Color", "operation");
     }
 }

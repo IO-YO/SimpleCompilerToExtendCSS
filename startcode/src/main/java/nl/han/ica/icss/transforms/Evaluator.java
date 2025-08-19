@@ -6,6 +6,7 @@ import nl.han.ica.icss.ast.operations.*;
 import nl.han.ica.icss.scoping.ScopeManager;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static nl.han.ica.icss.scoping.ASTScopeRules.isScopingNode;
 
@@ -43,28 +44,22 @@ public class Evaluator implements Transform {
 
     private void transformRuleBody(StyleRule rule) {
         for (ASTNode child : rule.body) {
-
             if (child instanceof IfClause ifc) {
-
-                Expression expr = ifc.conditionalExpression;
-
-                if (expr instanceof BoolLiteral) {
-                    boolean condition = ((BoolLiteral) expr).value;
-                    nodesToRemove.add(ifc);
-                    if (condition) {
-                        nodesToAdd.addAll(ifc.body);
-                    }
-                }
+                nodesToAdd.addAll(getSelectedBody(ifc));
+                nodesToRemove.add(ifc);
             }
+        }
+        nodesToRemove.forEach(rule::removeChild);
+        nodesToAdd.forEach(rule::addChild);
+    }
 
+    private List<ASTNode> getSelectedBody(IfClause ifc) {
+        if (ifc.conditionalExpression instanceof BoolLiteral b && b.value) {
+            return ifc.body;
+        } else if (ifc.elseClause != null) {
+            return ifc.elseClause.body;
         }
-
-        for (ASTNode child : nodesToRemove) {
-            rule.removeChild(child);
-        }
-        for (ASTNode child : nodesToAdd){
-            rule.addChild(child);
-        }
+            return List.of();
     }
 
     private void handleDeclaration(Declaration decl) {

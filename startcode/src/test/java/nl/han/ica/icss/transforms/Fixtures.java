@@ -35,13 +35,13 @@ public class Fixtures {
             @NotNull ASTNode[] suffix
     ) {
 
-        ASTNode ifNode = (elseBody.length == 0)
+        ASTNode clauseNode = (elseBody.length == 0)
                 ? ASTBuilder.ifClause(condition, ifBody)
                 : ASTBuilder.ifElseClause(condition, ifBody, elseBody);
 
         ASTNode[] ruleBody = RuleBody
                 .start(prefix)
-                .then(ifNode)
+                .then(clauseNode)
                 .thenAll(suffix)
                 .toArray();
 
@@ -61,11 +61,17 @@ public class Fixtures {
 
         ASTNode[] pickedBody = condition ? ifBody : elseBody;
 
+        ASTNode [] expectedBody = RuleBody
+                    .start(prefix)
+                    .thenAll(pickedBody)
+                    .thenAll(suffix)
+                    .toArray();
+
         return createConditionalRulePair(
                 new BoolLiteral(condition),
                 ifBody,
                 elseBody,
-                pickedBody,
+                expectedBody,
                 prefix,
                 suffix
         );

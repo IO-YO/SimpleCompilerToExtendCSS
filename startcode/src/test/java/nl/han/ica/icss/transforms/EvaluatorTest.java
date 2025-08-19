@@ -28,9 +28,6 @@ class EvaluatorTest {
     public record EvalCase(String name, Expression input, Literal Expected) {
     }
 
-    public record EvalIfCase(String name, Expression condition, ASTNode[] ifBody, ASTNode[] expectedBody) {
-    }
-
     private void assertEvaluatedCorrectly(Fixtures.ASTPair test) {
         new Evaluator().apply(test.input());
         assertEquals(test.expected(), test.input());

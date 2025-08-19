@@ -333,7 +333,7 @@ public class Fixtures {
 		return ASTBuilder.stylesheet(
 				ASTBuilder.rule(
 						"p",
-						ASTBuilder.assign(
+						ASTBuilder.varAssignment(
 								"Var",
 								new PixelLiteral(10)
 						),
@@ -352,7 +352,7 @@ public class Fixtures {
 		return ASTBuilder.stylesheet(
 				ASTBuilder.rule(
 						"p",
-						ASTBuilder.assign(
+						ASTBuilder.varAssignment(
 								"Var",
 								new PixelLiteral(10)
 						),
