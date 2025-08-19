@@ -140,12 +140,4 @@ public class ASTBuilder {
         );
     }
 
-    public static AST ruleWithPropertyDeclaration(String ruleTag, String propertyName, Expression expression) {
-        return ASTBuilder.stylesheet(
-                ASTBuilder.rule(ruleTag,
-                        ASTBuilder.decl(propertyName, expression)
-                )
-        );
-    }
-
 }

@@ -1,6 +1,7 @@
 package nl.han.ica.icss.transforms;
 
-import nl.han.ica.icss.ASTBuilder;
+import static nl.han.ica.icss.ASTBuilder.*;
+
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
 import org.jetbrains.annotations.NotNull;
@@ -11,16 +12,16 @@ public class Fixtures {
     }
 
     public static ASTPair createExpressionEvalPair(Expression expression, Literal expectedLiteral) {
-        AST input = ASTBuilder.ruleWithPropertyDeclaration(
-                "p",
-                "width",
-                expression
+        AST input = stylesheet(
+                rule("p",
+                        decl("width", expression)
+                )
         );
 
-        AST expected = ASTBuilder.ruleWithPropertyDeclaration(
-                "p",
-                "width",
-                expectedLiteral
+        AST expected = stylesheet(
+                rule("p",
+                        decl("width", expectedLiteral)
+                )
         );
 
         return new ASTPair(input, expected);
@@ -36,8 +37,8 @@ public class Fixtures {
     ) {
 
         ASTNode clauseNode = (elseBody.length == 0)
-                ? ASTBuilder.ifClause(condition, ifBody)
-                : ASTBuilder.ifElseClause(condition, ifBody, elseBody);
+                ? ifClause(condition, ifBody)
+                : ifElseClause(condition, ifBody, elseBody);
 
         ASTNode[] ruleBody = RuleBody
                 .start(prefix)
@@ -45,8 +46,8 @@ public class Fixtures {
                 .thenAll(suffix)
                 .toArray();
 
-        AST input = ASTBuilder.stylesheet(ASTBuilder.rule("p", ruleBody));
-        AST expected = ASTBuilder.stylesheet(ASTBuilder.rule("p", cloneBody(expectedBody)));
+        AST input = stylesheet(rule("p", ruleBody));
+        AST expected = stylesheet(rule("p", cloneBody(expectedBody)));
 
         return new ASTPair(input, expected);
     }
@@ -61,11 +62,11 @@ public class Fixtures {
 
         ASTNode[] pickedBody = condition ? ifBody : elseBody;
 
-        ASTNode [] expectedBody = RuleBody
-                    .start(prefix)
-                    .thenAll(pickedBody)
-                    .thenAll(suffix)
-                    .toArray();
+        ASTNode[] expectedBody = RuleBody
+                .start(prefix)
+                .thenAll(pickedBody)
+                .thenAll(suffix)
+                .toArray();
 
         return createConditionalRulePair(
                 new BoolLiteral(condition),
@@ -134,15 +135,15 @@ public class Fixtures {
         if (node instanceof Declaration d) {
             String prop = d.property.name;
             if (d.expression instanceof PixelLiteral p)
-                return ASTBuilder.decl(prop, new PixelLiteral(p.value));
+                return decl(prop, new PixelLiteral(p.value));
             if (d.expression instanceof PercentageLiteral p)
-                return ASTBuilder.decl(prop, new PercentageLiteral(p.value));
+                return decl(prop, new PercentageLiteral(p.value));
             if (d.expression instanceof ScalarLiteral s)
-                return ASTBuilder.decl(prop, new ScalarLiteral(s.value));
+                return decl(prop, new ScalarLiteral(s.value));
             if (d.expression instanceof BoolLiteral b)
-                return ASTBuilder.decl(prop, new BoolLiteral(b.value));
+                return decl(prop, new BoolLiteral(b.value));
             if (d.expression instanceof ColorLiteral c)
-                return ASTBuilder.decl(prop, new ColorLiteral(c.value));
+                return decl(prop, new ColorLiteral(c.value));
         }
         return node;
     }
