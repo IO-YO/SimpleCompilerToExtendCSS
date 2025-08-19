@@ -7,7 +7,7 @@ import java.util.Set;
 public class ASTScopeRules {
     private static final Set<Class<? extends ASTNode>> scopeNodes = Set.of(
             Stylesheet.class,
-            Stylerule.class,
+            StyleRule.class,
             IfClause.class,
             ElseClause.class
     );

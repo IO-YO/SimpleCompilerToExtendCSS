@@ -44,6 +44,11 @@ public class ElseClause extends ASTNode{
         return Objects.hash(body);
     }
 
+    @Override
+    public ASTNode removeChild(ASTNode child) {
+        body.remove(child);
+        return this;
+    }
 
 
 }

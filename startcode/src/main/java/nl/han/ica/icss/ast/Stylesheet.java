@@ -48,7 +48,6 @@ public class Stylesheet extends ASTNode {
 
 	@Override
 	public int hashCode() {
-
 		return Objects.hash(body);
 	}
 }

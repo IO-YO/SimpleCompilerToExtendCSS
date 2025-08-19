@@ -2,7 +2,7 @@ grammar ICSS;
 
 // --- PARSER: ---
 stylesheet
-    : variableAssignment* stylerule*
+    : variableAssignment* styleRule*
     ;
 
 // --- Variable Assignment:
@@ -16,7 +16,7 @@ variableReference: CAPITAL_IDENT;
 
 // --- Style rules:
 // #id { }
-stylerule
+styleRule
     : selector body
     ;
 

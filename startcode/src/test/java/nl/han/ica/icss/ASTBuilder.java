@@ -21,8 +21,8 @@ public class ASTBuilder {
         return new AST(sheet);
     }
 
-    public static Stylerule rule(String tagName, ASTNode... declarations) {
-        Stylerule rule = new Stylerule();
+    public static StyleRule rule(String tagName, ASTNode... declarations) {
+        StyleRule rule = new StyleRule();
         rule.addChild(new TagSelector(tagName));
         for (ASTNode decl : declarations) {
             rule.addChild(decl);

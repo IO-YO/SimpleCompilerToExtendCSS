@@ -37,8 +37,8 @@ public class ASTListener extends ICSSBaseListener {
     }
 
     @Override
-    public void enterStylerule(ICSSParser.StyleruleContext ctx) {
-        Stylerule rule = new Stylerule();
+    public void enterStyleRule(ICSSParser.StyleRuleContext ctx) {
+        StyleRule rule = new StyleRule();
         if (ctx.getChild(0).getText().startsWith(".")) {
             rule.addChild(new ClassSelector(ctx.getChild(0).getText()));
         }
@@ -52,8 +52,8 @@ public class ASTListener extends ICSSBaseListener {
     }
 
     @Override
-    public void exitStylerule(ICSSParser.StyleruleContext ctx) {
-        Stylerule rule = (Stylerule) nodeStack.pop();
+    public void exitStyleRule(ICSSParser.StyleRuleContext ctx) {
+        StyleRule rule = (StyleRule) nodeStack.pop();
         nodeStack.peek().addChild(rule);
 
     }

@@ -13,14 +13,18 @@ public class Evaluator implements Transform {
 
     private ScopeManager<Literal> scopeManager;
     private ArrayList<ASTNode> nodesToRemove;
+    private ArrayList<ASTNode> nodesToAdd;
 
     @Override
     public void apply(AST ast) {
+
         this.scopeManager = new ScopeManager<>();
         this.nodesToRemove = new ArrayList<>();
+        this.nodesToAdd = new ArrayList<>();
+
         transform(ast.root);
 
-        for(ASTNode child : nodesToRemove) {
+        for (ASTNode child : nodesToRemove) {
             ast.root.removeChild(child);
         }
     }
@@ -30,20 +34,37 @@ public class Evaluator implements Transform {
 
         if (node instanceof Declaration decl)
             handleDeclaration(decl);
-        if (node instanceof IfClause ifNode) transformIfClause(ifNode);
+        if (node instanceof StyleRule rule) transformRuleBody(rule);
 
         node.getChildren().forEach(this::transform);
 
         if (isScopingNode(node)) scopeManager.exitScope();
     }
 
-    private void transformIfClause(IfClause ifNode) {
-        Expression expr = ifNode.conditionalExpression;
-        if (expr instanceof BoolLiteral) {
-            boolean condition = ((BoolLiteral) expr).value;
-            if (!condition) nodesToRemove.add(ifNode);
+    private void transformRuleBody(StyleRule rule) {
+        for (ASTNode child : rule.body) {
+
+            if (child instanceof IfClause ifc) {
+
+                Expression expr = ifc.conditionalExpression;
+
+                if (expr instanceof BoolLiteral) {
+                    boolean condition = ((BoolLiteral) expr).value;
+                    nodesToRemove.add(ifc);
+                    if (condition) {
+                        nodesToAdd.addAll(ifc.body);
+                    }
+                }
+            }
+
         }
 
+        for (ASTNode child : nodesToRemove) {
+            rule.removeChild(child);
+        }
+        for (ASTNode child : nodesToAdd){
+            rule.addChild(child);
+        }
     }
 
     private void handleDeclaration(Declaration decl) {
