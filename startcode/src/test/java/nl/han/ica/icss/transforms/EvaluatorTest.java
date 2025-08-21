@@ -16,7 +16,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EvaluatorTest {
 
-    public record EvalCase(String name, Expression input, Literal expected) {}
+    public record EvalCase(String name, Expression input, Literal expected) {
+    }
 
     private void assertEvaluatedCorrectly(EvaluatorTestBuilder.ASTPair test) {
         new Evaluator().apply(test.input());
@@ -281,8 +282,12 @@ class EvaluatorTest {
                 Arguments.of(new EvalConditionalRuleCase(
                         "a: If(True)",
                         () -> EvaluatorTestBuilder.build()
-                                .input(rule("p", ifClause(bool(true), decl("width", px(10)))))
-                                .expected(rule("p", decl("width", px(10))))
+                                .input(
+                                        rule("p",
+                                                ifClause(bool(true), decl("width", px(10)))))
+                                .expected(
+                                        rule("p",
+                                                decl("width", px(10))))
                                 .toPair()
                 )),
                 Arguments.of(new EvalConditionalRuleCase(
@@ -310,8 +315,15 @@ class EvaluatorTest {
                 Arguments.of(new EvalConditionalRuleCase(
                         "b: If(false) then Else",
                         () -> EvaluatorTestBuilder.build()
-                                .input(rule("p", ifElseClause(bool(false), decl("width", px(10)), decl("width", px(20)))))
-                                .expected(rule("p", decl("width", px(20))))
+                                .input(
+                                        rule("p",
+                                                ifElseClause(
+                                                        bool(false),
+                                                        decl("width", px(10)),
+                                                        decl("width", px(20)))))
+                                .expected(
+                                        rule("p",
+                                                decl("width", px(20))))
                                 .toPair()
                 )),
                 Arguments.of(new EvalConditionalRuleCase(
@@ -320,7 +332,9 @@ class EvaluatorTest {
                                 .input(
                                         rule("p",
                                                 decl("margin", px(20)),
-                                                ifClause(bool(true), decl("width", px(10))),
+                                                ifClause(
+                                                        bool(true),
+                                                        decl("width", px(10))),
                                                 decl("padding", px(30))
                                         )
                                 )
@@ -339,7 +353,9 @@ class EvaluatorTest {
                                 .input(
                                         rule("p",
                                                 decl("margin", px(20)),
-                                                ifClause(bool(false), decl("width", px(10))),
+                                                ifClause(
+                                                        bool(false),
+                                                        decl("width", px(10))),
                                                 decl("padding", px(30))
                                         )
                                 )
@@ -361,4 +377,5 @@ class EvaluatorTest {
     void TR02_IfElse_EvaluatesCorrectly(EvalConditionalRuleCase testCase) {
         assertEvaluatedCorrectly(testCase.build().get());
     }
+
 }

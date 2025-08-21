@@ -24,17 +24,12 @@ public class Evaluator implements Transform {
         this.nodesToAdd = new ArrayList<>();
 
         transform(ast.root);
-
-        for (ASTNode child : nodesToRemove) {
-            ast.root.removeChild(child);
-        }
     }
 
     private void transform(ASTNode node) {
         if (isScopingNode(node)) scopeManager.enterScope();
 
-        if (node instanceof Declaration decl)
-            handleDeclaration(decl);
+        if (node instanceof Declaration decl) handleDeclaration(decl);
         if (node instanceof StyleRule rule) transformRuleBody(rule);
 
         node.getChildren().forEach(this::transform);
@@ -43,23 +38,23 @@ public class Evaluator implements Transform {
     }
 
     private void transformRuleBody(StyleRule rule) {
+        ArrayList<ASTNode> newBody = new ArrayList<>();
+
         for (ASTNode child : rule.body) {
             if (child instanceof IfClause ifc) {
-                nodesToAdd.addAll(getSelectedBody(ifc));
-                nodesToRemove.add(ifc);
+                newBody.addAll(getSelectedBody(ifc));
+            } else {
+                newBody.add(child);
             }
         }
-        nodesToRemove.forEach(rule::removeChild);
-        nodesToAdd.forEach(rule::addChild);
+
+        rule.body = newBody;
     }
 
     private List<ASTNode> getSelectedBody(IfClause ifc) {
-        if (ifc.conditionalExpression instanceof BoolLiteral b && b.value) {
-            return ifc.body;
-        } else if (ifc.elseClause != null) {
-            return ifc.elseClause.body;
-        }
-            return List.of();
+        if (ifc.conditionalExpression instanceof BoolLiteral b && b.value) return ifc.body;
+        else if (ifc.elseClause != null) return ifc.elseClause.body;
+        return List.of();
     }
 
     private void handleDeclaration(Declaration decl) {
