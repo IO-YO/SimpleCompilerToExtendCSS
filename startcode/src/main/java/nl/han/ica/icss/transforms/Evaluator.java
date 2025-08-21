@@ -13,15 +13,11 @@ import static nl.han.ica.icss.scoping.ASTScopeRules.isScopingNode;
 public class Evaluator implements Transform {
 
     private ScopeManager<Literal> scopeManager;
-    private ArrayList<ASTNode> nodesToRemove;
-    private ArrayList<ASTNode> nodesToAdd;
 
     @Override
     public void apply(AST ast) {
 
         this.scopeManager = new ScopeManager<>();
-        this.nodesToRemove = new ArrayList<>();
-        this.nodesToAdd = new ArrayList<>();
 
         transform(ast.root);
     }
