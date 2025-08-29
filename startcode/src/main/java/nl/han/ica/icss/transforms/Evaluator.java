@@ -6,7 +6,6 @@ import nl.han.ica.icss.ast.operations.*;
 import nl.han.ica.icss.scoping.ScopeManager;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static nl.han.ica.icss.scoping.ASTScopeRules.isScopingNode;
 
@@ -24,31 +23,30 @@ public class Evaluator implements Transform {
         if (isScopingNode(node)) scopeManager.enterScope();
 
         if (node instanceof Declaration decl) handleDeclaration(decl);
-        if (node instanceof StyleRule rule) transformBody(rule);
+        if (node instanceof StyleRule rule) rule.body = transformBody(rule.body);
 
         node.getChildren().forEach(this::transform);
 
         if (isScopingNode(node)) scopeManager.exitScope();
     }
 
-    private void transformBody(StyleRule rule) {
+    private ArrayList<ASTNode> transformBody(ArrayList<ASTNode> body) {
         ArrayList<ASTNode> newBody = new ArrayList<>();
-
-        for (ASTNode child : rule.body) {
+        for (ASTNode child : body) {
             if (child instanceof IfClause ifc) {
-                newBody.addAll(getSelectedBody(ifc));
+                ArrayList<ASTNode> selected = getSelectedBody(ifc);
+                newBody.addAll(transformBody(selected));
             } else {
                 newBody.add(child);
             }
         }
-
-        rule.body = newBody;
+        return newBody;
     }
 
-    private List<ASTNode> getSelectedBody(IfClause ifc) {
+    private ArrayList<ASTNode> getSelectedBody(IfClause ifc) {
         if (ifc.conditionalExpression instanceof BoolLiteral b && b.value) return ifc.body;
         else if (ifc.elseClause != null) return ifc.elseClause.body;
-        return List.of();
+        return new ArrayList<>();
     }
 
     private void handleDeclaration(Declaration decl) {

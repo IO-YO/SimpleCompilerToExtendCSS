@@ -368,7 +368,7 @@ class EvaluatorTest {
                                 .toPair()
                 )),
                 Arguments.of(new EvalConditionalRuleCase(
-                        "c: Nested If inside body",
+                        "c: Nested If(false)-else inside if(true)-body",
                         () -> EvaluatorTestBuilder.build()
                                 .input(
                                         rule("p",
@@ -385,15 +385,64 @@ class EvaluatorTest {
                                 )
                                 .expected(
                                         rule("p",
+                                                decl("width", percent(10)),
+                                                decl("width", percent(3000))
+                                        )
+                                )
+                                .toPair(
+
+                                )
+                )),
+                Arguments.of(new EvalConditionalRuleCase(
+                        "c: Nested If(true) inside if(true)body",
+                        () -> EvaluatorTestBuilder.build()
+                                .input(
+                                        rule("p",
                                                 ifClause(
                                                         bool(true),
                                                         decl("width", percent(10)),
-                                                        ifElseClause(
-                                                                bool(false),
-                                                                new ASTNode[] {decl("width", percent(200))},
-                                                                new ASTNode[] {decl("width", percent(3000))}
+                                                        ifClause(
+                                                                bool(true),
+                                                                decl("width", percent(3000))
                                                         )
                                                 )
+                                        )
+                                )
+                                .expected(
+                                        rule("p",
+                                                decl("width", percent(10)),
+                                                decl("width", percent(3000))
+                                        )
+                                )
+                                .toPair(
+
+                                )
+                )),
+                Arguments.of(new EvalConditionalRuleCase(
+                        "c: Nested If(true) inside if(true)body inside if(false)-else body",
+                        () -> EvaluatorTestBuilder.build()
+                                .input(
+                                        rule("p",
+                                                ifClause(
+                                                        bool(true),
+                                                        decl("width", percent(10)),
+                                                        ifClause(
+                                                                bool(true),
+                                                                decl("width", percent(20)),
+                                                                ifElseClause(
+                                                                        bool(false),
+                                                                        decl("width", percent(1999)),
+                                                                        decl("width", percent(30))
+                                                                        )
+                                                        )
+                                                )
+                                        )
+                                )
+                                .expected(
+                                        rule("p",
+                                                decl("width", percent(10)),
+                                                decl("width", percent(20)),
+                                                decl("width", percent(30))
                                         )
                                 )
                                 .toPair(

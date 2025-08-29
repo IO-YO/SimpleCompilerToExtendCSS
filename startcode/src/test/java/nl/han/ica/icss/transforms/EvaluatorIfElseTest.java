@@ -168,44 +168,6 @@ public class EvaluatorIfElseTest {
                                                 .build()
                                 )
                                 .toPair()
-                )),
-
-                // c: Nested If inside body (kept intact by TR02 in your current transformer)
-                Arguments.of(new EvalConditionalRuleCase(
-                        "c: Nested If inside body",
-                        () -> EvaluatorTestBuilder.build()
-                                .input(
-                                        StylesheetBuilder.begin()
-                                                .rule(tag("p"))
-                                                .ifClause(bool(true))
-                                                .decl("width", percent(10))
-                                                // nested if
-                                                .ifClause(bool(false))
-                                                .decl("width", percent(200))
-                                                .elseClause()
-                                                .decl("width", percent(3000))
-                                                .endElse()
-                                                .endIf()
-                                                .endIf()
-                                                .endRule()
-                                                .build()
-                                )
-                                .expected(
-                                        StylesheetBuilder.begin()
-                                                .rule(tag("p"))
-                                                .ifClause(bool(true))
-                                                .decl("width", percent(10))
-                                                .ifClause(bool(false))
-                                                .decl("width", percent(200))
-                                                .elseClause()
-                                                .decl("width", percent(3000))
-                                                .endElse()
-                                                .endIf()
-                                                .endIf()
-                                                .endRule()
-                                                .build()
-                                )
-                                .toPair()
                 ))
         );
     }
