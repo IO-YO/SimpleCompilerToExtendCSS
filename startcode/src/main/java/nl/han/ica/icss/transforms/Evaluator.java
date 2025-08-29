@@ -16,9 +16,7 @@ public class Evaluator implements Transform {
 
     @Override
     public void apply(AST ast) {
-
         this.scopeManager = new ScopeManager<>();
-
         transform(ast.root);
     }
 
@@ -26,14 +24,14 @@ public class Evaluator implements Transform {
         if (isScopingNode(node)) scopeManager.enterScope();
 
         if (node instanceof Declaration decl) handleDeclaration(decl);
-        if (node instanceof StyleRule rule) transformRuleBody(rule);
+        if (node instanceof StyleRule rule) transformBody(rule);
 
         node.getChildren().forEach(this::transform);
 
         if (isScopingNode(node)) scopeManager.exitScope();
     }
 
-    private void transformRuleBody(StyleRule rule) {
+    private void transformBody(StyleRule rule) {
         ArrayList<ASTNode> newBody = new ArrayList<>();
 
         for (ASTNode child : rule.body) {

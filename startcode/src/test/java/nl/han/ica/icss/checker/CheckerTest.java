@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static nl.han.ica.icss.ASTBuilder.*;
+import static nl.han.ica.icss.ASTBuilder.ASTBuilder.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CheckerTest {

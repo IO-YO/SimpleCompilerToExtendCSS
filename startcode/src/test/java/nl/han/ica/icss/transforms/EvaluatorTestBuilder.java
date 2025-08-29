@@ -3,7 +3,7 @@ package nl.han.ica.icss.transforms;
 import nl.han.ica.icss.ast.*;
 import org.jetbrains.annotations.NotNull;
 
-import static nl.han.ica.icss.ASTBuilder.*;
+import static nl.han.ica.icss.ASTBuilder.ASTBuilder.*;
 
 public class EvaluatorTestBuilder {
 

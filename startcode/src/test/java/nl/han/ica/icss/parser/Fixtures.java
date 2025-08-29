@@ -1,6 +1,6 @@
 package nl.han.ica.icss.parser;
 
-import nl.han.ica.icss.ASTBuilder;
+import nl.han.ica.icss.ASTBuilder.ASTBuilder;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.BoolLiteral;
 import nl.han.ica.icss.ast.literals.ColorLiteral;
@@ -356,10 +356,7 @@ public class Fixtures {
 								"Var",
 								new PixelLiteral(10)
 						),
-						ASTBuilder.declVar(
-								"width",
-								"Var"
-						)
+						ASTBuilder.decl("width", ASTBuilder.var("Var"))
 				)
 		);
 	}

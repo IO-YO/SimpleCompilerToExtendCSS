@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static nl.han.ica.icss.ASTBuilder.*;
+import static nl.han.ica.icss.ASTBuilder.ASTBuilder.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class EvaluatorTest {
@@ -366,6 +366,39 @@ class EvaluatorTest {
                                         )
                                 )
                                 .toPair()
+                )),
+                Arguments.of(new EvalConditionalRuleCase(
+                        "c: Nested If inside body",
+                        () -> EvaluatorTestBuilder.build()
+                                .input(
+                                        rule("p",
+                                                ifClause(
+                                                        bool(true),
+                                                        decl("width", percent(10)),
+                                                        ifElseClause(
+                                                                bool(false),
+                                                                new ASTNode[] {decl("width", percent(200))},
+                                                                new ASTNode[] {decl("width", percent(3000))}
+                                                        )
+                                                )
+                                        )
+                                )
+                                .expected(
+                                        rule("p",
+                                                ifClause(
+                                                        bool(true),
+                                                        decl("width", percent(10)),
+                                                        ifElseClause(
+                                                                bool(false),
+                                                                new ASTNode[] {decl("width", percent(200))},
+                                                                new ASTNode[] {decl("width", percent(3000))}
+                                                        )
+                                                )
+                                        )
+                                )
+                                .toPair(
+
+                                )
                 ))
         );
     }

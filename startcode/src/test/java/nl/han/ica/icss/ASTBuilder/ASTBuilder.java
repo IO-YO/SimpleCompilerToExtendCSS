@@ -1,4 +1,4 @@
-package nl.han.ica.icss;
+package nl.han.ica.icss.ASTBuilder;
 
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
@@ -10,10 +10,7 @@ import nl.han.ica.icss.ast.selectors.TagSelector;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/**
- * Utility class for constructing different types of Abstract Syntax Tree (AST) nodes,
- * such as stylesheets, style rules, declarations, and conditional clauses.
- */
+@Deprecated
 public class ASTBuilder {
 
     // === Literal Helpers ===
@@ -85,16 +82,6 @@ public class ASTBuilder {
         ass.addChild(value);
         return ass;
     }
-
-    public static Declaration declVar(
-            String property,
-            String varName
-    ) {
-        Declaration decl = new Declaration(property);
-        decl.addChild(new VariableReference(varName));
-        return decl;
-    }
-
 
     public static IfClause ifClause(
             ASTNode bool,
