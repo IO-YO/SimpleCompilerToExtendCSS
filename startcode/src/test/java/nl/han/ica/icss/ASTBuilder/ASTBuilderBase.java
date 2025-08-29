@@ -8,6 +8,9 @@ import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.operations.SubtractOperation;
+import nl.han.ica.icss.ast.selectors.ClassSelector;
+import nl.han.ica.icss.ast.selectors.IdSelector;
+import nl.han.ica.icss.ast.selectors.TagSelector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,4 +35,8 @@ public class ASTBuilderBase<T extends ASTBuilderBase<T>> {
     public static AddOperation add(Expression a, Expression b) { return new AddOperation(a, b); }
     public static SubtractOperation sub(Expression a, Expression b) { return new SubtractOperation(a, b); }
     public static MultiplyOperation mul(Expression a, Expression b) { return new MultiplyOperation(a, b); }
+
+    public static TagSelector tag(String name) { return new TagSelector(name);}
+    public static IdSelector id(String name) { return new IdSelector(name);}
+    public static ClassSelector class_(String name) { return new ClassSelector(name);}
 }
