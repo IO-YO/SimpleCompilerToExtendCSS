@@ -1,5 +1,6 @@
 package nl.han.ica.icss.ASTBuilder;
 
+import nl.han.ica.icss.ast.ASTNode;
 import nl.han.ica.icss.ast.Expression;
 import nl.han.ica.icss.ast.Selector;
 import nl.han.ica.icss.ast.StyleRule;
@@ -24,4 +25,7 @@ public class StyleRuleBuilder extends ASTBuilderBase<StyleRuleBuilder> {
         return parent;
     }
 
+    public void addChild(ASTNode node) {
+        rule.addChild(node);
+    }
 }
