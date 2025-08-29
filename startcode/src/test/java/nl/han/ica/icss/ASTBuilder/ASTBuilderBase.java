@@ -1,9 +1,6 @@
 package nl.han.ica.icss.ASTBuilder;
 
-import nl.han.ica.icss.ast.ASTNode;
-import nl.han.ica.icss.ast.Expression;
-import nl.han.ica.icss.ast.VariableAssignment;
-import nl.han.ica.icss.ast.VariableReference;
+import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
@@ -25,6 +22,15 @@ public class ASTBuilderBase<T extends ASTBuilderBase<T>> {
         body.add(ass);
         return (T) this;
     }
+
+    @SuppressWarnings("unchecked")
+    public T decl(String property, Expression value) {
+        Declaration declaration = new Declaration(property);
+        declaration.addChild(value);
+        body.add(declaration);
+        return (T) this;
+    }
+
     public static PixelLiteral px(int value) { return new PixelLiteral(value); }
     public static PercentageLiteral percent(int value) { return new PercentageLiteral(value); }
     public static ScalarLiteral scalar(int value) { return new ScalarLiteral(value); }

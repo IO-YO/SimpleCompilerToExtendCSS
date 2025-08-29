@@ -22,8 +22,18 @@ public class EvaluatorTestBuilder {
             return this;
         }
 
+        public Builder input(AST ast) {
+            this.input = ast;
+            return this;
+        }
+
         public Builder expected(@NotNull ASTNode... nodes) {
             this.expected = stylesheet(nodes);
+            return this;
+        }
+
+        public Builder expected(AST ast) {
+            this.expected = ast;
             return this;
         }
 

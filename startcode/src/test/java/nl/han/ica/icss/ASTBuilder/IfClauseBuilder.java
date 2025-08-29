@@ -9,7 +9,7 @@ public class IfClauseBuilder extends ASTBuilderBase<IfClauseBuilder>{
 
     private final StyleRuleBuilder parent;
     private final Expression condition;
-    private ElseClauseBuilder elseBuilder;
+    protected ElseClauseBuilder elseBuilder;
 
     public IfClauseBuilder(StyleRuleBuilder parent, Expression condition) {
         this.parent = parent;
@@ -28,6 +28,20 @@ public class IfClauseBuilder extends ASTBuilderBase<IfClauseBuilder>{
         }
         parent.addChild(ifClause);
         return parent;
+    }
+
+    public IfClauseBuilder ifClause(Expression condition) {
+        return new IfClauseBuilder(this.parent, condition) {
+            @Override
+            public StyleRuleBuilder endIf() {
+                var ifc = new IfClause(condition, new ArrayList<>(this.body));
+                if (this.elseBuilder != null) {
+                    ifc.elseClause = this.elseBuilder.build();
+                }
+                IfClauseBuilder.this.body.add(ifc);
+                return IfClauseBuilder.this.parent;
+            }
+        };
     }
 
 }
