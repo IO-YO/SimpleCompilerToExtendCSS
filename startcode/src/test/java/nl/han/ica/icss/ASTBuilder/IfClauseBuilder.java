@@ -26,6 +26,8 @@ public class IfClauseBuilder extends ASTBuilderBase<IfClauseBuilder>{
         if (elseBuilder != null) {
             ifClause.elseClause = elseBuilder.build();
         }
+        parent.body.add(ifClause);
+        return parent;
     }
 
 }

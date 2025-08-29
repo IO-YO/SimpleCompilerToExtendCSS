@@ -2,7 +2,9 @@ package nl.han.ica.icss.ASTBuilder;
 
 import nl.han.ica.icss.ast.ElseClause;
 
-public class ElseClauseBuilder {
+import java.util.ArrayList;
+
+public class ElseClauseBuilder extends ASTBuilderBase<ElseClauseBuilder> {
 
     private final IfClauseBuilder parent;
 
@@ -11,6 +13,11 @@ public class ElseClauseBuilder {
     }
 
     public ElseClause build() {
-        return null;
+        return new ElseClause(new ArrayList<>(body));
     }
+
+    public IfClauseBuilder endElse(){
+        return parent;
+    }
+
 }
