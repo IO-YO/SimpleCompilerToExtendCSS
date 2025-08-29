@@ -10,7 +10,6 @@ import nl.han.ica.icss.ast.selectors.TagSelector;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-@Deprecated
 public class ASTBuilder {
 
     // === Literal Helpers ===
