@@ -10,9 +10,11 @@ public class PixelLiteral extends Literal {
     public PixelLiteral(int value) {
         this.value = value;
     }
+
     public PixelLiteral(String text) {
         this.value = Integer.parseInt(text.substring(0, text.length() - 2));
     }
+
     @Override
     public String getNodeLabel() {
         return "Pixel literal (" + value + ")";
@@ -30,5 +32,26 @@ public class PixelLiteral extends Literal {
     @Override
     public int hashCode() {
         return Objects.hash(value);
+    }
+
+    @Override
+    public Literal multiply(Literal rhs) {
+        return (rhs instanceof ScalarLiteral r)
+                ? new PixelLiteral(this.value * r.value)
+                : null;
+    }
+
+    @Override
+    public Literal add(Literal rhs) {
+        return (rhs instanceof PixelLiteral r)
+                ? new PixelLiteral(this.value + r.value)
+                : null;
+    }
+
+    @Override
+    public Literal subtract(Literal rhs) {
+        return (rhs instanceof PixelLiteral r)
+                ? new PixelLiteral(this.value - r.value)
+                : null;
     }
 }
