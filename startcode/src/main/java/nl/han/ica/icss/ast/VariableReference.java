@@ -30,4 +30,9 @@ public class VariableReference extends Expression {
 
 		return Objects.hash(name);
 	}
+
+	@Override
+	public <T> T accept(ExpressionVisitor<T> visitor) {
+		return visitor.visitVariableReference(this);
+	}
 }

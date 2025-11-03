@@ -4,12 +4,13 @@ import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.operations.*;
 import nl.han.ica.icss.scoping.ScopeManager;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
 import static nl.han.ica.icss.scoping.ASTScopeRules.isScopingNode;
 
-public class Evaluator implements Transform {
+public class Evaluator implements Transform, ExpressionVisitor<Literal> {
 
     private ScopeManager<Literal> scopeManager;
 
@@ -22,8 +23,11 @@ public class Evaluator implements Transform {
     private void transform(ASTNode node) {
         if (isScopingNode(node)) scopeManager.enterScope();
 
-        if (node instanceof Declaration decl) handleDeclaration(decl);
-        if (node instanceof StyleRule rule) rule.body = transformBody(rule.body);
+        switch (node) {
+            case Declaration decl -> decl.expression = evaluate(decl.expression);
+            case StyleRule rule -> rule.body = transformBody(rule.body);
+            default -> {}
+        }
 
         node.getChildren().forEach(this::transform);
 
@@ -49,67 +53,60 @@ public class Evaluator implements Transform {
         return new ArrayList<>();
     }
 
-    private void handleDeclaration(Declaration decl) {
-        decl.expression = evaluate(decl.expression);
+    private Literal evaluate(@NotNull Expression expr) {
+        return expr.accept(this);
     }
 
-    private Literal evaluate(Expression expr) {
-        if (expr instanceof Literal lit) return lit;
-        if (expr instanceof AddOperation op) return evaluateAdd(op);
-        if (expr instanceof SubtractOperation sub) return evaluateSubtract(sub);
-        if (expr instanceof MultiplyOperation mul) return evaluateMultiply(mul);
-        return null;
+    @Override
+    public Literal visitLiteral(Literal literal) {
+        return literal;
     }
 
-    private Literal evaluateMultiply(MultiplyOperation mul) {
+    @Override
+    public Literal visitMultiplyOperation(MultiplyOperation mul) {
         Literal lhs = evaluate(mul.lhs);
         Literal rhs = evaluate(mul.rhs);
 
-        // px * scalar
-        if (lhs instanceof PixelLiteral l && rhs instanceof ScalarLiteral r)
-            return new PixelLiteral(l.value * r.value);
-        // scalar * px
-        if (lhs instanceof ScalarLiteral l && rhs instanceof PixelLiteral r)
-            return new PixelLiteral(l.value * r.value);
+        return switch (lhs) {
+            case PixelLiteral l when rhs instanceof ScalarLiteral r -> new PixelLiteral(l.value * r.value);
+            case ScalarLiteral l when rhs instanceof PixelLiteral r -> new PixelLiteral(l.value * r.value);
+            case PercentageLiteral l when rhs instanceof ScalarLiteral r -> new PercentageLiteral(l.value * r.value);
+            case ScalarLiteral l when rhs instanceof PercentageLiteral r -> new PercentageLiteral(l.value * r.value);
+            case ScalarLiteral l when rhs instanceof ScalarLiteral r -> new ScalarLiteral(l.value * r.value);
+            default -> null;
+        };
+    }
 
-        // percentage * scalar
-        if (lhs instanceof PercentageLiteral l && rhs instanceof ScalarLiteral r)
-            return new PercentageLiteral(l.value * r.value);
-        // scalar * percentage
-        if (lhs instanceof ScalarLiteral l && rhs instanceof PercentageLiteral r)
-            return new PercentageLiteral(l.value * r.value);
-
-        // scalar * scalar
-        if (lhs instanceof ScalarLiteral l && rhs instanceof ScalarLiteral r)
-            return new ScalarLiteral(l.value * r.value);
-
+    @Override
+    public Literal visitVariableReference(VariableReference ref) {
         return null;
     }
 
-    private Literal evaluateSubtract(SubtractOperation sub) {
+    @Override
+    public Literal visitSubtractOperation(SubtractOperation sub) {
         Literal lhs = evaluate(sub.lhs);
         Literal rhs = evaluate(sub.rhs);
-        if (lhs instanceof PixelLiteral l && rhs instanceof PixelLiteral r)
-            return new PixelLiteral(l.value - r.value);
-        if (lhs instanceof PercentageLiteral l && rhs instanceof PercentageLiteral r)
-            return new PercentageLiteral(l.value - r.value);
-        if (lhs instanceof ScalarLiteral l && rhs instanceof ScalarLiteral r)
-            return new ScalarLiteral(l.value - r.value);
-        return null;
+
+        return switch (lhs) {
+            case PixelLiteral l when rhs instanceof PixelLiteral r -> new PixelLiteral(l.value - r.value);
+            case PercentageLiteral l when rhs instanceof PercentageLiteral r ->
+                    new PercentageLiteral(l.value - r.value);
+            case ScalarLiteral l when rhs instanceof ScalarLiteral r -> new ScalarLiteral(l.value - r.value);
+            default -> null;
+        };
     }
 
-    private Literal evaluateAdd(AddOperation op) {
+    @Override
+    public Literal visitAddOperation(AddOperation op) {
         Literal lhs = evaluate(op.lhs);
         Literal rhs = evaluate(op.rhs);
 
-        if (lhs instanceof PixelLiteral l && rhs instanceof PixelLiteral r)
-            return new PixelLiteral(l.value + r.value);
-        if (lhs instanceof PercentageLiteral l && rhs instanceof PercentageLiteral r)
-            return new PercentageLiteral(l.value + r.value);
-        if (lhs instanceof ScalarLiteral l && rhs instanceof ScalarLiteral r)
-            return new ScalarLiteral(l.value + r.value);
-
-        return null;
+        return switch (lhs) {
+            case PixelLiteral l when rhs instanceof PixelLiteral r -> new PixelLiteral(l.value + r.value);
+            case PercentageLiteral l when rhs instanceof PercentageLiteral r ->
+                    new PercentageLiteral(l.value + r.value);
+            case ScalarLiteral l when rhs instanceof ScalarLiteral r -> new ScalarLiteral(l.value + r.value);
+            default -> null;
+        };
     }
-
 }
