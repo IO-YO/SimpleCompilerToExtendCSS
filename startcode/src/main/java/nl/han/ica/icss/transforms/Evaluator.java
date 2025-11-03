@@ -4,7 +4,6 @@ import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.operations.*;
 import nl.han.ica.icss.scoping.ScopeManager;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
@@ -54,7 +53,7 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
         return new ArrayList<>();
     }
 
-    private Literal evaluate(@NotNull Expression expr) {
+    private Literal evaluate(Expression expr) {
         return expr.accept(this);
     }
 
