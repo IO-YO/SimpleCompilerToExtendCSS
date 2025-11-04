@@ -7,15 +7,15 @@ import java.util.Objects;
  * A stylesheet is the root node of the AST, it consists of one or more statements
  *
  */
-public class Stylesheet extends ASTNode {
+public class StyleSheet extends ASTNode {
 
 
 	public ArrayList<ASTNode> body;
 	
-	public Stylesheet() {
+	public StyleSheet() {
 		this.body = new ArrayList<>();
 	}
-	public Stylesheet(ArrayList<ASTNode> body) {
+	public StyleSheet(ArrayList<ASTNode> body) {
 		this.body = body;
 	}
 	@Override
@@ -42,7 +42,7 @@ public class Stylesheet extends ASTNode {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
-		Stylesheet that = (Stylesheet) o;
+		StyleSheet that = (StyleSheet) o;
 		return Objects.equals(body, that.body);
 	}
 

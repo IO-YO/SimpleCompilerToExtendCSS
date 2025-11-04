@@ -27,7 +27,7 @@ public class ASTBuilder {
     public static BoolLiteral bool(boolean value) {
         return new BoolLiteral(value);
     }
-    public static VariableReference var(String name) {
+    public static VariableReference varRef(String name) {
         return new VariableReference(name);
     }
     public static MultiplyOperation multiply(Expression a, Expression b){
@@ -40,10 +40,10 @@ public class ASTBuilder {
         return new SubtractOperation(a, b);
     }
 
-    public static AST stylesheet(ASTNode... rules) {
-        Stylesheet sheet = new Stylesheet();
-        for (ASTNode rule : rules) {
-            sheet.addChild(rule);
+    public static AST stylesheet(ASTNode... nodes) {
+        StyleSheet sheet = new StyleSheet();
+        for (ASTNode node : nodes) {
+            sheet.addChild(node);
         }
         return new AST(sheet);
     }
@@ -58,25 +58,14 @@ public class ASTBuilder {
     }
 
     public static Declaration decl(String property, Expression expression) {
-        Declaration decl = new Declaration(property);
-        decl.addChild(expression);
-        return decl;
+        return new Declaration(property, expression);
     }
 
-    public static VariableAssignment varAssignment(
-            String name,
-            Expression value
-    ) {
-        VariableAssignment ass = new VariableAssignment();
-        ass.addChild(new VariableReference(name));
-        ass.addChild(value);
-        return ass;
+    public static VariableAssignment varAssignment(String name, Expression value) {
+        return new VariableAssignment(name, value);
     }
 
-    public static IfClause ifClause(
-            ASTNode bool,
-            ASTNode... bodyNodes
-    ) {
+    public static IfClause ifClause(ASTNode bool, ASTNode... bodyNodes) {
         ArrayList<ASTNode> body = new ArrayList<>(Arrays.asList(bodyNodes));
         return new IfClause((Expression) bool, body);
     }
@@ -87,8 +76,7 @@ public class ASTBuilder {
             ASTNode[] elseBodyNodes
     ) {
 
-        if (!(condition instanceof BoolLiteral
-                || condition instanceof VariableReference)) {
+        if (!(condition instanceof BoolLiteral || condition instanceof VariableReference)) {
             throw new IllegalArgumentException("Condition must be a boolean or variable reference");
         }
 

@@ -3,9 +3,6 @@ package nl.han.ica.icss.ast;
 import java.util.ArrayList;
 import java.util.Objects;
 
-/*
- * A Declaration defines a style property. Declarations are things like "width: 100px"
- */
 public class Declaration extends ASTNode {
     public PropertyName property;
     public Expression expression;

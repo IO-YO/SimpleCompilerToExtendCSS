@@ -26,13 +26,13 @@ public class ASTListener extends ICSSBaseListener {
 
     @Override
     public void enterStylesheet(ICSSParser.StylesheetContext ctx) {
-        Stylesheet sheet = new Stylesheet();
+        StyleSheet sheet = new StyleSheet();
         nodeStack.push(sheet);
     }
 
     @Override
     public void exitStylesheet(ICSSParser.StylesheetContext ctx) {
-        Stylesheet sheet = (Stylesheet) nodeStack.pop();
+        StyleSheet sheet = (StyleSheet) nodeStack.pop();
         ast.setRoot(sheet);
     }
 

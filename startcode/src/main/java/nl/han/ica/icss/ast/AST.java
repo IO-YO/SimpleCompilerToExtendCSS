@@ -7,15 +7,15 @@ import java.util.Objects;
 
 public class AST {
 	//The root of the tree
-	public Stylesheet root;
+	public StyleSheet root;
 
 	public AST() {
-		root = new Stylesheet();
+		root = new StyleSheet();
 	}
-	public AST(Stylesheet stylesheet) {
+	public AST(StyleSheet stylesheet) {
 		root = stylesheet;
 	}
-	public void setRoot(Stylesheet stylesheet) {
+	public void setRoot(StyleSheet stylesheet) {
 		root = stylesheet;
 	}
 

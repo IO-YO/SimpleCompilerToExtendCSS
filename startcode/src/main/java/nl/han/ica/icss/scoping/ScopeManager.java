@@ -17,14 +17,18 @@ public class ScopeManager<T> implements IScopeManager<T> {
 
     @Override
     public void exitScope() {
-        if (scopes.isEmpty()) throw new IllegalStateException("No active scope to exit.");
+        if (scopes.isEmpty())
+            throw new IllegalStateException("No active scope to exit.");
+
         scopes.pop();
     }
 
     @Override
     public void declare(String name, T type) {
         Map<String, T> current = scopes.peek();
-        if (current == null) throw new IllegalStateException("No active scope to declare variable in.");
+        if (current == null)
+            throw new IllegalStateException("No active scope to declare variable in.");
+
         current.put(name, type);
     }
 

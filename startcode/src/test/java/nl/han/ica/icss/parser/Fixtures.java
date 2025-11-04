@@ -16,7 +16,7 @@ import nl.han.ica.icss.ast.selectors.TagSelector;
 public class Fixtures {
 
     public static AST uncheckedLevel0() {
-		Stylesheet stylesheet = new Stylesheet();
+		StyleSheet stylesheet = new StyleSheet();
 		/*
 		p {
 			background-color: #ffffff;
@@ -65,7 +65,7 @@ public class Fixtures {
     }
 
 	public static AST uncheckedLevel1() {
-		Stylesheet stylesheet = new Stylesheet();
+		StyleSheet stylesheet = new StyleSheet();
 		/*
 			LinkColor := #ff0000;
 			ParWidth := 500px;
@@ -135,7 +135,7 @@ public class Fixtures {
 	}
 
 	public static AST uncheckedLevel2() {
-		Stylesheet stylesheet = new Stylesheet();
+		StyleSheet stylesheet = new StyleSheet();
 		/*
 			LinkColor := #ff0000;
 			ParWidth := 500px;
@@ -210,7 +210,7 @@ public class Fixtures {
 	}
 
 	public static AST uncheckedLevel3() {
-		Stylesheet stylesheet = new Stylesheet();
+		StyleSheet stylesheet = new StyleSheet();
 		/*
 			LinkColor := #ff0000;
 			ParWidth := 500px;
@@ -356,7 +356,7 @@ public class Fixtures {
 								"Var",
 								new PixelLiteral(10)
 						),
-						ASTBuilder.decl("width", ASTBuilder.var("Var"))
+						ASTBuilder.decl("width", ASTBuilder.varRef("Var"))
 				)
 		);
 	}

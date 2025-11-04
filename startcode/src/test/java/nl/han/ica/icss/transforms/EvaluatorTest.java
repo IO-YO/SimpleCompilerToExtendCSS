@@ -270,7 +270,7 @@ class EvaluatorTest {
         );
     }
 
-    public record EvalConditionalRuleCase(String name, Supplier<EvaluatorTestBuilder.ASTPair> build) {
+    public record EvalBuilderCase(String name, Supplier<EvaluatorTestBuilder.ASTPair> build) {
         @Override
         public @NotNull String toString() {
             return name;
@@ -279,7 +279,7 @@ class EvaluatorTest {
 
     static Stream<Arguments> IfElseCases() {
         return Stream.of(
-                Arguments.of(new EvalConditionalRuleCase(
+                Arguments.of(new EvalBuilderCase(
                         "a: If(True)",
                         () -> EvaluatorTestBuilder.build()
                                 .input(
@@ -290,14 +290,14 @@ class EvaluatorTest {
                                                 decl("width", px(10))))
                                 .toPair()
                 )),
-                Arguments.of(new EvalConditionalRuleCase(
+                Arguments.of(new EvalBuilderCase(
                         "a: If(False)",
                         () -> EvaluatorTestBuilder.build()
                                 .input(rule("p", ifClause(bool(false), decl("width", px(10)))))
                                 .expected(rule("p"))
                                 .toPair()
                 )),
-                Arguments.of(new EvalConditionalRuleCase(
+                Arguments.of(new EvalBuilderCase(
                         "b: If(true) no Else",
                         () -> EvaluatorTestBuilder.build()
                                 .input(
@@ -312,7 +312,7 @@ class EvaluatorTest {
                                 .expected(rule("p", decl("width", px(10))))
                                 .toPair()
                 )),
-                Arguments.of(new EvalConditionalRuleCase(
+                Arguments.of(new EvalBuilderCase(
                         "b: If(false) then Else",
                         () -> EvaluatorTestBuilder.build()
                                 .input(
@@ -326,7 +326,7 @@ class EvaluatorTest {
                                                 decl("width", px(20))))
                                 .toPair()
                 )),
-                Arguments.of(new EvalConditionalRuleCase(
+                Arguments.of(new EvalBuilderCase(
                         "a: If(True) with Prefix and Suffix",
                         () -> EvaluatorTestBuilder.build()
                                 .input(
@@ -347,7 +347,7 @@ class EvaluatorTest {
                                 )
                                 .toPair()
                 )),
-                Arguments.of(new EvalConditionalRuleCase(
+                Arguments.of(new EvalBuilderCase(
                         "a: If(False) with Prefix and Suffix",
                         () -> EvaluatorTestBuilder.build()
                                 .input(
@@ -367,7 +367,7 @@ class EvaluatorTest {
                                 )
                                 .toPair()
                 )),
-                Arguments.of(new EvalConditionalRuleCase(
+                Arguments.of(new EvalBuilderCase(
                         "c: Nested If(false)-else inside if(true)-body",
                         () -> EvaluatorTestBuilder.build()
                                 .input(
@@ -377,8 +377,8 @@ class EvaluatorTest {
                                                         decl("width", percent(10)),
                                                         ifElseClause(
                                                                 bool(false),
-                                                                new ASTNode[] {decl("width", percent(200))},
-                                                                new ASTNode[] {decl("width", percent(3000))}
+                                                                new ASTNode[]{decl("width", percent(200))},
+                                                                new ASTNode[]{decl("width", percent(3000))}
                                                         )
                                                 )
                                         )
@@ -393,7 +393,7 @@ class EvaluatorTest {
 
                                 )
                 )),
-                Arguments.of(new EvalConditionalRuleCase(
+                Arguments.of(new EvalBuilderCase(
                         "c: Nested If(true) inside if(true)body",
                         () -> EvaluatorTestBuilder.build()
                                 .input(
@@ -418,7 +418,7 @@ class EvaluatorTest {
 
                                 )
                 )),
-                Arguments.of(new EvalConditionalRuleCase(
+                Arguments.of(new EvalBuilderCase(
                         "c: Nested If(true) inside if(true)body inside if(false)-else body",
                         () -> EvaluatorTestBuilder.build()
                                 .input(
@@ -433,7 +433,7 @@ class EvaluatorTest {
                                                                         bool(false),
                                                                         decl("width", percent(1999)),
                                                                         decl("width", percent(30))
-                                                                        )
+                                                                )
                                                         )
                                                 )
                                         )
@@ -456,7 +456,63 @@ class EvaluatorTest {
     @MethodSource("IfElseCases")
     @Tag("TR02")
     @DisplayName("TR02: If/Else expressions are evaluated correctly")
-    void TR02_IfElse_EvaluatesCorrectly(EvalConditionalRuleCase testCase) {
+    void TR02_IfElse_EvaluatesCorrectly(EvalBuilderCase testCase) {
+        assertEvaluatedCorrectly(testCase.build().get());
+    }
+
+    static Stream<Arguments> variableReferences() {
+        return Stream.of(
+                Arguments.of(
+                        new EvalBuilderCase(
+                                "Global var ass: ref in decl",
+                                () -> EvaluatorTestBuilder.build()
+                                        .input(
+                                                varAssignment(
+                                                        "DefaultWidth",
+                                                        px(10)
+                                                ),
+                                                rule("p",
+                                                        decl("width",
+                                                                varRef("DefaultWidth")
+                                                        )
+                                                )
+                                        )
+                                        .expected(
+                                                rule("p",
+                                                        decl("width",
+                                                                px(10)
+                                                        )
+                                                )
+                                        )
+                                        .toPair()
+                        )
+                ),
+                Arguments.of(
+                        new EvalBuilderCase(
+                                "StyleRule Var Ass: ref in decl",
+                                () -> EvaluatorTestBuilder.build()
+                                        .input(
+                                                rule("p",
+                                                        varAssignment("DefaultWidth", px(50)),
+                                                        decl("width", varRef("DefaultWidth"))
+                                                )
+                                        )
+                                        .expected(
+                                                rule("p",
+                                                        decl("width", px(50))
+                                                )
+                                        )
+                                        .toPair()
+                        )
+                )
+        );
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("variableReferences")
+    @Tag("TR02")
+    @DisplayName("TR03: All variable references are resolved to their evaluated values.")
+    void TR03_VariableAssignment_EvaluatesCorrectly(EvalBuilderCase testCase) {
         assertEvaluatedCorrectly(testCase.build().get());
     }
 

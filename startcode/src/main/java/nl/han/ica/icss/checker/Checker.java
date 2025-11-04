@@ -39,25 +39,28 @@ public class Checker {
     private void checkNode(ASTNode node) {
         if (isScopingNode(node)) scopeManager.enterScope();
 
-        if (node instanceof VariableAssignment assNode) handleVariableAssignment(assNode);
-        if (node instanceof IfClause ifNode) checkIfClause(ifNode);
-        if (node instanceof Declaration declNode) checkDeclaration(declNode);
+        switch (node) {
+            case VariableAssignment var -> handleVariableAssignment(var);
+            case IfClause ifc -> checkIfClause(ifc);
+            case Declaration decl -> checkDeclaration(decl);
+            default -> {}
+        }
 
         node.getChildren().forEach(this::checkNode);
 
         if(isScopingNode(node)) scopeManager.exitScope();
     }
 
-    private void checkIfClause(IfClause ifNode) {
-        ExpressionType type = resolveExpressionType(ifNode.conditionalExpression, ifNode);
+    private void checkIfClause(IfClause ifc) {
+        ExpressionType type = resolveExpressionType(ifc.conditionalExpression, ifc);
         if (type != ExpressionType.BOOL) {
-            ifNode.setError("If-condition must be a boolean, but got: " + type);
+            ifc.setError("If-condition must be a boolean, but got: " + type);
         }
     }
 
-    private void handleVariableAssignment(VariableAssignment node) {
-        ExpressionType type = resolveExpressionType(node.expression, node);
-        scopeManager.declare(node.name.name, type);
+    private void handleVariableAssignment(VariableAssignment varAss) {
+        ExpressionType type = resolveExpressionType(varAss.expression, varAss);
+        scopeManager.declare(varAss.name.name, type);
     }
 
     private ExpressionType resolveExpressionType(Expression expr, ASTNode errorTarget) {
@@ -88,7 +91,8 @@ public class Checker {
 
         ExpressionType actualType = resolveExpressionType(node.expression, node);
         if (actualType == ExpressionType.UNDEFINED
-                || allowed.contains(actualType)) return;
+                || allowed.contains(actualType))
+            return;
 
         node.setError("Invalid value type '" + actualType + "' for property '" + propertyName + "'");
     }

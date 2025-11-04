@@ -63,7 +63,7 @@ class CheckerTest {
     void CH01_UndefinedVariable_FailsWhenNotDeclared() {
         AST ast = checkFixture(
                 stylesheet(
-                        rule("p", decl("width", var("DefaultWidth")))
+                        rule("p", decl("width", varRef("DefaultWidth")))
                 )
         );
         assertSingleError(ast, "ERROR", "Unknown variable", "DefaultWidth");
@@ -76,7 +76,7 @@ class CheckerTest {
         AST ast = checkFixture(
                 stylesheet(
                         varAssignment("DefaultWidth", px(10)),
-                        rule("p", decl("width", var("DefaultWidth")))
+                        rule("p", decl("width", varRef("DefaultWidth")))
                 )
         );
         assertNoErrors(ast);
@@ -89,7 +89,7 @@ class CheckerTest {
         AST ast = checkFixture(
                 stylesheet(
                         varAssignment("FirstVar", px(10)),
-                        varAssignment("SecondVar", var("FirstVar"))
+                        varAssignment("SecondVar", varRef("FirstVar"))
                 )
         );
         assertNoErrors(ast);
@@ -101,7 +101,7 @@ class CheckerTest {
     void CH01_VariableDeclaredWithAnotherVariable_FailsWhenRefUndefined() {
         AST ast = checkFixture(
                 stylesheet(
-                        varAssignment("FirstVar", var("NotDeclaredVariable"))
+                        varAssignment("FirstVar", varRef("NotDeclaredVariable"))
                 )
         );
         assertSingleError(ast, "ERROR", "NotDeclaredVariable");
@@ -138,7 +138,7 @@ class CheckerTest {
         AST ast = checkFixture(
                 stylesheet(
                         varAssignment("DefaultWidth", px(10)),
-                        rule("p", decl("color", var("DefaultWidth")))
+                        rule("p", decl("color", varRef("DefaultWidth")))
                 )
         );
         assertSingleError(ast, "ERROR:", "PIXEL", "color");
@@ -152,7 +152,7 @@ class CheckerTest {
                 stylesheet(
                         rule("p",
                                 ifClause(bool(true), varAssignment("ScopedVar", px(10))),
-                                decl("width", var("ScopedVar"))
+                                decl("width", varRef("ScopedVar"))
                         )
                 )
         );
@@ -167,7 +167,7 @@ class CheckerTest {
                 stylesheet(
                         rule("p",
                                 ifElseClause(bool(true), varAssignment("ScopedElseVar", px(20))),
-                                decl("width", var("ScopedElseVar"))
+                                decl("width", varRef("ScopedElseVar"))
                         )
                 )
         );
@@ -182,7 +182,7 @@ class CheckerTest {
                 stylesheet(
                         varAssignment("GlobalWidth", px(15)),
                         rule("p",
-                                ifClause(bool(true), decl("width", var("GlobalWidth")))
+                                ifClause(bool(true), decl("width", varRef("GlobalWidth")))
                         )
                 )
         );
@@ -220,7 +220,7 @@ class CheckerTest {
         AST ast = checkFixture(
                 stylesheet(
                         varAssignment("LightMode", bool(true)),
-                        rule("p", ifClause(var("LightMode"), decl("width", px(10))))
+                        rule("p", ifClause(varRef("LightMode"), decl("width", px(10))))
                 )
         );
         assertNoErrors(ast);
@@ -233,7 +233,7 @@ class CheckerTest {
         AST ast = checkFixture(
                 stylesheet(
                         varAssignment("LightMode", px(10)),
-                        rule("p", ifClause(var("LightMode"), decl("width", px(10))))
+                        rule("p", ifClause(varRef("LightMode"), decl("width", px(10))))
                 )
         );
         assertSingleError(ast, "ERROR", "If-condition");

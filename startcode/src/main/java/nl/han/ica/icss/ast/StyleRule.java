@@ -20,6 +20,7 @@ public class StyleRule extends ASTNode {
 	public String getNodeLabel() {
 		return "Stylerule";
 	}
+
 	@Override
 	public ArrayList<ASTNode> getChildren() {
 		ArrayList<ASTNode> children = new ArrayList<>();
