@@ -419,36 +419,35 @@ class EvaluatorTest {
                                 )
                 )),
                 Arguments.of(new EvalBuilderCase(
-                        "c: Nested If(true) inside if(true)body inside if(false)-else body",
-                        () -> EvaluatorTestBuilder.build()
-                                .input(
-                                        rule("p",
-                                                ifClause(
-                                                        bool(true),
-                                                        decl("width", percent(10)),
+                                "c: Nested If(true) inside if(true)body inside if(false)-else body",
+                                () -> EvaluatorTestBuilder.build()
+                                        .input(
+                                                rule("p",
                                                         ifClause(
                                                                 bool(true),
-                                                                decl("width", percent(20)),
-                                                                ifElseClause(
-                                                                        bool(false),
-                                                                        decl("width", percent(1999)),
-                                                                        decl("width", percent(30))
+                                                                decl("width", percent(10)),
+                                                                ifClause(
+                                                                        bool(true),
+                                                                        decl("width", percent(20)),
+                                                                        ifElseClause(
+                                                                                bool(false),
+                                                                                decl("width", percent(1999)),
+                                                                                decl("width", percent(30))
+                                                                        )
                                                                 )
                                                         )
                                                 )
                                         )
-                                )
-                                .expected(
-                                        rule("p",
-                                                decl("width", percent(10)),
-                                                decl("width", percent(20)),
-                                                decl("width", percent(30))
+                                        .expected(
+                                                rule("p",
+                                                        decl("width", percent(10)),
+                                                        decl("width", percent(20)),
+                                                        decl("width", percent(30))
+                                                )
                                         )
-                                )
-                                .toPair(
-
-                                )
-                ))
+                                        .toPair()
+                        )
+                )
         );
     }
 
@@ -468,12 +467,12 @@ class EvaluatorTest {
                                 () -> EvaluatorTestBuilder.build()
                                         .input(
                                                 varAssignment(
-                                                        "DefaultWidth",
+                                                        "GlobalVar",
                                                         px(10)
                                                 ),
                                                 rule("p",
                                                         decl("width",
-                                                                varRef("DefaultWidth")
+                                                                varRef("GlobalVar")
                                                         )
                                                 )
                                         )
@@ -486,7 +485,8 @@ class EvaluatorTest {
                                         )
                                         .toPair()
                         )
-                ),
+                )
+                ,
                 Arguments.of(
                         new EvalBuilderCase(
                                 "StyleRule Var Ass: ref in decl",

@@ -7,8 +7,6 @@ import nl.han.ica.icss.scoping.ScopeManager;
 
 import java.util.ArrayList;
 
-import static nl.han.ica.icss.scoping.ASTScopeRules.isScopingNode;
-
 public class Evaluator implements Transform, ExpressionVisitor<Literal> {
 
     private ScopeManager<Expression> scopeManager;
@@ -19,61 +17,59 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
         transform(ast.root);
     }
 
-    private void transform(ASTNode node) {
-        if (isScopingNode(node)) scopeManager.enterScope();
-
-        switch (node) {
-            case StyleSheet s -> {
-                ArrayList<ASTNode> nodes = s.getChildren();
-                for (ASTNode n : nodes) {
-                    if(n instanceof VariableAssignment varAss){
-                        scopeManager.declare(varAss.name.name, varAss.expression);
-                        s.removeChild(n);
-                    }
-                }
-            }
-            case StyleRule rule -> {
-                transformBody(node, rule.body);
-            }
-            case Declaration decl -> decl.expression = evaluate(decl.expression);
-            default -> {
-            }
-        }
-
-        node.getChildren().forEach(this::transform);
-
-        if (isScopingNode(node)) scopeManager.exitScope();
+    private void transform(StyleSheet sheet) {
+        scopeManager.enterScope();
+        transformBody(sheet.getChildren());
+        scopeManager.exitScope();
     }
 
-    private ArrayList<ASTNode> transformBody(ASTNode parent, ArrayList<ASTNode> body) {
-        ArrayList<ASTNode> newBody = new ArrayList<>();
+    private void transformBody(ArrayList<ASTNode> body) {
+        ArrayList<ASTNode> nodesToRemove = new ArrayList<>();
+        ArrayList<ASTNode> nodesToAdd = new ArrayList<>();
+
         for (ASTNode child : body) {
-            if (child instanceof VariableAssignment varAss) {
-                scopeManager.declare(varAss.name.name, varAss.expression);
-                parent.removeChild(child);
+
+            if (child instanceof VariableAssignment va) {
+                Literal value = evaluate(va.expression);
+                scopeManager.declare(va.name.name, value);
+                nodesToRemove.add(va);
+                continue;
             }
+
+            if (child instanceof Declaration decl) {
+                decl.expression = evaluate(decl.expression);
+                continue;
+            }
+
             if (child instanceof IfClause ifc) {
-                ArrayList<ASTNode> selected = getSelectedBody(ifc);
-                newBody.addAll(transformBody(child, selected));
-                newBody.forEach(parent::addChild);
-                parent.removeChild(child);
-            } else {
-                newBody.add(child);
+                BoolLiteral condition = (BoolLiteral) evaluate(ifc.conditionalExpression);
+                ArrayList<ASTNode> chosenBody = condition.value
+                        ? ifc.body
+                        : (ifc.elseClause != null ? ifc.elseClause.body : null);
+
+                if(chosenBody != null) {
+                    scopeManager.enterScope();
+                    transformBody(chosenBody);
+                    scopeManager.exitScope();
+                }
+
+                nodesToRemove.add(ifc);
+                if(chosenBody != null) nodesToAdd.addAll(chosenBody);
+
+                continue;
+            }
+
+            if (child instanceof StyleRule rule) {
+                scopeManager.enterScope();
+                transformBody(rule.body);
+                scopeManager.exitScope();
             }
         }
-        return newBody;
-    }
 
-    private ArrayList<ASTNode> getSelectedBody(IfClause ifc) {
-        BoolLiteral result = (BoolLiteral) evaluate(ifc.conditionalExpression);
-
-        if (result.value) {
-            return ifc.body;
+        for(ASTNode r : nodesToRemove) {
+            body.remove(r);
         }
-        else if (ifc.elseClause != null) {
-            return ifc.elseClause.body;
-        }
-        return new ArrayList<>();
+        body.addAll(nodesToAdd);
     }
 
     private Literal evaluate(Expression expr) {
