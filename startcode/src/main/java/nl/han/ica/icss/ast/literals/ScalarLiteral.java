@@ -34,27 +34,4 @@ public class ScalarLiteral extends Literal {
         return Objects.hash(value);
     }
 
-    @Override
-    public Literal multiply(Literal rhs) {
-        return switch (rhs) {
-            case ScalarLiteral r -> new ScalarLiteral(this.value * r.value);
-            case PixelLiteral r -> new PixelLiteral(this.value * r.value);
-            case PercentageLiteral r -> new PercentageLiteral(this.value * r.value);
-            default -> null;
-        };
-    }
-
-    @Override
-    public Literal add(Literal rhs) {
-        return (rhs instanceof ScalarLiteral r)
-                ? new ScalarLiteral(this.value + r.value)
-                : null;
-    }
-
-    @Override
-    public Literal subtract(Literal rhs) {
-        return (rhs instanceof ScalarLiteral r)
-                ? new ScalarLiteral(this.value - r.value)
-                : null;
-    }
 }

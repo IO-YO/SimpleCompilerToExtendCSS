@@ -24,7 +24,7 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
     }
 
     private void transformBody(ArrayList<ASTNode> body) {
-        for (int i = 0; i < body.size();) {
+        for (int i = 0; i < body.size(); ) {
             ASTNode child = body.get(i);
 
             if (child instanceof VariableAssignment va) {
@@ -59,7 +59,7 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
                 scopeManager.exitScope();
 
                 body.remove(i);
-                if(!chosenBody.isEmpty()) {
+                if (!chosenBody.isEmpty()) {
                     body.addAll(i, chosenBody);
                     i += chosenBody.size();
                 }
@@ -79,18 +79,44 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
     }
 
     @Override
-    public Literal visitAddOperation(AddOperation add) {
-        return evaluate(add.lhs).add(evaluate(add.rhs));
+    public Literal visitMultiplyOperation(MultiplyOperation mul) {
+        Literal lhs = evaluate(mul.lhs);
+        Literal rhs = evaluate(mul.rhs);
+
+        return switch (lhs) {
+            case PixelLiteral l when rhs instanceof ScalarLiteral r -> new PixelLiteral(l.value * r.value);
+            case ScalarLiteral l when rhs instanceof PixelLiteral r -> new PixelLiteral(l.value * r.value);
+            case PercentageLiteral l when rhs instanceof ScalarLiteral r -> new PercentageLiteral(l.value * r.value);
+            case ScalarLiteral l when rhs instanceof PercentageLiteral r -> new PercentageLiteral(l.value * r.value);
+            case ScalarLiteral l when rhs instanceof ScalarLiteral r -> new ScalarLiteral(l.value * r.value);
+            default -> null;
+        };
     }
 
     @Override
     public Literal visitSubtractOperation(SubtractOperation sub) {
-        return evaluate(sub.lhs).subtract(evaluate(sub.rhs));
+        Literal lhs = evaluate(sub.lhs);
+        Literal rhs = evaluate(sub.rhs);
+
+        return switch (lhs) {
+            case PixelLiteral l when rhs instanceof PixelLiteral r -> new PixelLiteral(l.value - r.value);
+            case PercentageLiteral l when rhs instanceof PercentageLiteral r -> new PercentageLiteral(l.value - r.value);
+            case ScalarLiteral l when rhs instanceof ScalarLiteral r -> new ScalarLiteral(l.value - r.value);
+            default -> null;
+        };
     }
 
     @Override
-    public Literal visitMultiplyOperation(MultiplyOperation mul) {
-        return evaluate(mul.lhs).multiply(evaluate(mul.rhs));
+    public Literal visitAddOperation(AddOperation op) {
+        Literal lhs = evaluate(op.lhs);
+        Literal rhs = evaluate(op.rhs);
+
+        return switch (lhs) {
+            case PixelLiteral l when rhs instanceof PixelLiteral r -> new PixelLiteral(l.value + r.value);
+            case PercentageLiteral l when rhs instanceof PercentageLiteral r -> new PercentageLiteral(l.value + r.value);
+            case ScalarLiteral l when rhs instanceof ScalarLiteral r -> new ScalarLiteral(l.value + r.value);
+            default -> null;
+        };
     }
 
     @Override

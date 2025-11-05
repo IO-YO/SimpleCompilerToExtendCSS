@@ -32,24 +32,4 @@ public class PercentageLiteral extends Literal {
         return Objects.hash(value);
     }
 
-    @Override
-    public Literal multiply(Literal rhs) {
-        return (rhs instanceof ScalarLiteral r)
-                ? new PercentageLiteral(this.value * r.value)
-                : null;
-    }
-
-    @Override
-    public Literal add(Literal rhs) {
-        return (rhs instanceof PercentageLiteral r)
-                ? new PercentageLiteral(this.value + r.value)
-                : null;
-    }
-
-    @Override
-    public Literal subtract(Literal rhs) {
-        return (rhs instanceof PercentageLiteral r)
-                ? new PercentageLiteral(this.value - r.value)
-                : null;
-    }
 }

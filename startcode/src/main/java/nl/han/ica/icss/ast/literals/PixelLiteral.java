@@ -34,24 +34,4 @@ public class PixelLiteral extends Literal {
         return Objects.hash(value);
     }
 
-    @Override
-    public Literal multiply(Literal rhs) {
-        return (rhs instanceof ScalarLiteral r)
-                ? new PixelLiteral(this.value * r.value)
-                : null;
-    }
-
-    @Override
-    public Literal add(Literal rhs) {
-        return (rhs instanceof PixelLiteral r)
-                ? new PixelLiteral(this.value + r.value)
-                : null;
-    }
-
-    @Override
-    public Literal subtract(Literal rhs) {
-        return (rhs instanceof PixelLiteral r)
-                ? new PixelLiteral(this.value - r.value)
-                : null;
-    }
 }

@@ -28,19 +28,4 @@ public class ColorLiteral extends Literal {
 
         return Objects.hash(value);
     }
-
-    @Override
-    public Literal multiply(Literal rhs) {
-        return null;
-    }
-
-    @Override
-    public Literal add(Literal rhs) {
-        return null;
-    }
-
-    @Override
-    public Literal subtract(Literal rhs) {
-        return null;
-    }
 }
