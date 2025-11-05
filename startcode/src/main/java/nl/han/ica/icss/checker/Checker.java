@@ -33,7 +33,44 @@ public class Checker {
                 || ast.root == null) throw new IllegalArgumentException("AST or root cannot be null");
 
         scopeManager = new ScopeManager<>();
-        checkNode(ast.root);
+//        checkNode(ast.root);
+        scopeManager.enterScope();
+        checkBody(ast.root.getChildren());
+        scopeManager.exitScope();
+    }
+
+    private void checkBody(List<ASTNode> body) {
+        for (ASTNode child : body) {
+            if(child instanceof VariableAssignment va) {
+                handleVariableAssignment(va);
+                continue;
+            }
+
+            if(child instanceof Declaration decl) {
+                checkDeclaration(decl);
+                continue;
+            }
+
+            if(child instanceof StyleRule rule) {
+                scopeManager.enterScope();
+                checkBody(rule.getChildren());
+                scopeManager.exitScope();
+                continue;
+            }
+
+            if(child instanceof IfClause ifc) {
+                scopeManager.enterScope();
+                checkIfClause(ifc);
+                scopeManager.exitScope();
+
+                if(ifc.elseClause != null) {
+                    scopeManager.enterScope();
+                    checkBody(ifc.elseClause.getChildren());
+                    scopeManager.exitScope();
+                }
+            }
+
+        }
     }
 
     private void checkNode(ASTNode node) {
