@@ -41,4 +41,13 @@ public class ScopeManager<T> implements IScopeManager<T> {
         }
         return null;
     }
+
+    public boolean existsInCurrentScope(String name) {
+        for (Map<String, T> scope : scopes) {
+            if (scope.containsKey(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

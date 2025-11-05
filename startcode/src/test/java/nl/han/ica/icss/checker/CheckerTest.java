@@ -189,6 +189,34 @@ class CheckerTest {
         assertNoErrors(ast);
     }
 
+    @Tag("CH06")
+    @DisplayName("CH06: Variable redeclared")
+    @Test
+    void CH06_VarReDeclared_Fails() {
+        AST ast = checkFixture(
+                stylesheet(
+                        varAssignment("GlobalWidth", px(15)),
+                        varAssignment("GlobalWidth", px(15))
+                )
+        );
+        assertSingleError(ast, "ERROR", "Variable", "GlobalWidth");
+    }
+
+    @Tag("CH06")
+    @DisplayName("CH06: Variable redeclared in if clause FAILS")
+    @Test
+    void CH06_VarReDeclared_in_ifClause_Fails() {
+        AST ast = checkFixture(
+                stylesheet(
+                        varAssignment("GlobalWidth", px(15)),
+                        rule("p",
+                                ifClause(bool(true), varAssignment("GlobalWidth", px(15)))
+                        )
+                )
+        );
+        assertSingleError(ast, "ERROR", "Variable", "GlobalWidth");
+    }
+
     @Tag("CH05")
     @DisplayName("CH05: If condition with boolean literal is valid")
     @Test

@@ -60,7 +60,11 @@ public class Checker {
 
     private void handleVariableAssignment(VariableAssignment varAss) {
         ExpressionType type = resolveExpressionType(varAss.expression, varAss);
-        scopeManager.declare(varAss.name.name, type);
+        String varName = varAss.name.name;
+        if (scopeManager.existsInCurrentScope(varName)) {
+            varAss.setError("Variable '" + varName + "' redeclared in the same scope");
+        }
+        scopeManager.declare(varName, type);
     }
 
     private ExpressionType resolveExpressionType(Expression expr, ASTNode errorTarget) {
