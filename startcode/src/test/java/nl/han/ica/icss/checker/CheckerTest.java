@@ -120,6 +120,18 @@ class CheckerTest {
     }
 
     @Tag("CH04")
+    @DisplayName("CH05: Scalar assigned to width in If condition is invalid")
+    @Test
+    void CH05_IfCondition_ScalarAssignedToWidth_Fails() {
+        AST ast = checkFixture(
+                stylesheet(
+                        rule("p", ifClause(bool(true), decl("width", scalar(10))))
+                )
+        );
+        assertSingleError(ast, "ERROR", "SCALAR");
+    }
+
+    @Tag("CH04")
     @DisplayName("CH04: Pixel assigned to width is valid")
     @Test
     void CH04_PropertyTypeMatch_PixelInWidth_Succeeds() {
@@ -266,6 +278,7 @@ class CheckerTest {
         );
         assertSingleError(ast, "ERROR", "If-condition");
     }
+
 
     @Tag("CH02")
     @DisplayName("CH02: Add scalar + scalar is valid")

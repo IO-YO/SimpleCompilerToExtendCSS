@@ -7,8 +7,6 @@ import nl.han.ica.icss.ast.types.ExpressionType;
 
 import java.util.*;
 
-import static nl.han.ica.icss.scoping.ASTScopeRules.isScopingNode;
-
 public class Checker {
 
     ScopeManager<ExpressionType> scopeManager;
@@ -33,7 +31,7 @@ public class Checker {
                 || ast.root == null) throw new IllegalArgumentException("AST or root cannot be null");
 
         scopeManager = new ScopeManager<>();
-//        checkNode(ast.root);
+
         scopeManager.enterScope();
         checkBody(ast.root.getChildren());
         scopeManager.exitScope();
@@ -59,8 +57,10 @@ public class Checker {
             }
 
             if(child instanceof IfClause ifc) {
+                checkIfCondition(ifc);
+
                 scopeManager.enterScope();
-                checkIfClause(ifc);
+                checkBody(ifc.body);
                 scopeManager.exitScope();
 
                 if(ifc.elseClause != null) {
@@ -73,22 +73,7 @@ public class Checker {
         }
     }
 
-    private void checkNode(ASTNode node) {
-        if (isScopingNode(node)) scopeManager.enterScope();
-
-        switch (node) {
-            case VariableAssignment var -> handleVariableAssignment(var);
-            case IfClause ifc -> checkIfClause(ifc);
-            case Declaration decl -> checkDeclaration(decl);
-            default -> {}
-        }
-
-        node.getChildren().forEach(this::checkNode);
-
-        if(isScopingNode(node)) scopeManager.exitScope();
-    }
-
-    private void checkIfClause(IfClause ifc) {
+    private void checkIfCondition(IfClause ifc) {
         ExpressionType type = resolveExpressionType(ifc.conditionalExpression, ifc);
         if (type != ExpressionType.BOOL) {
             ifc.setError("If-condition must be a boolean, but got: " + type);
