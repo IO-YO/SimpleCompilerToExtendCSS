@@ -24,38 +24,19 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
     }
 
     private void transformBody(ArrayList<ASTNode> body) {
-        ArrayList<ASTNode> nodesToRemove = new ArrayList<>();
-        ArrayList<ASTNode> nodesToAdd = new ArrayList<>();
-
-        for (ASTNode child : body) {
+        for (int i = 0; i < body.size();) {
+            ASTNode child = body.get(i);
 
             if (child instanceof VariableAssignment va) {
                 Literal value = evaluate(va.expression);
                 scopeManager.declare(va.name.name, value);
-                nodesToRemove.add(va);
+                body.remove(i);
                 continue;
             }
 
             if (child instanceof Declaration decl) {
                 decl.expression = evaluate(decl.expression);
-                continue;
-            }
-
-            if (child instanceof IfClause ifc) {
-                BoolLiteral condition = (BoolLiteral) evaluate(ifc.conditionalExpression);
-                ArrayList<ASTNode> chosenBody = condition.value
-                        ? ifc.body
-                        : (ifc.elseClause != null ? ifc.elseClause.body : null);
-
-                if(chosenBody != null) {
-                    scopeManager.enterScope();
-                    transformBody(chosenBody);
-                    scopeManager.exitScope();
-                }
-
-                nodesToRemove.add(ifc);
-                if(chosenBody != null) nodesToAdd.addAll(chosenBody);
-
+                i++;
                 continue;
             }
 
@@ -63,13 +44,29 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
                 scopeManager.enterScope();
                 transformBody(rule.body);
                 scopeManager.exitScope();
+                i++;
+                continue;
             }
-        }
 
-        for(ASTNode r : nodesToRemove) {
-            body.remove(r);
+            if (child instanceof IfClause ifc) {
+                BoolLiteral condition = (BoolLiteral) evaluate(ifc.conditionalExpression);
+                ArrayList<ASTNode> chosenBody = condition.value
+                        ? ifc.body
+                        : (ifc.elseClause != null ? ifc.elseClause.body : new ArrayList<>());
+
+                scopeManager.enterScope();
+                transformBody(chosenBody);
+                scopeManager.exitScope();
+
+                body.remove(i);
+                if(!chosenBody.isEmpty()) {
+                    body.addAll(i, chosenBody);
+                    i += chosenBody.size();
+                }
+                continue;
+            }
+            i++;
         }
-        body.addAll(nodesToAdd);
     }
 
     private Literal evaluate(Expression expr) {

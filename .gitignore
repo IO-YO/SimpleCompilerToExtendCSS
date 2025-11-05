@@ -47,6 +47,3 @@ out/
 **/gen/
 */gen/
 *.txt
-
-docs
-temp.md
