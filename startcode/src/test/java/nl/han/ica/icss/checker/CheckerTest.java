@@ -62,7 +62,7 @@ class CheckerTest {
     @Test
     void CH01_UndefinedVariable_FailsWhenNotDeclared() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", decl("width", varRef("DefaultWidth")))
                 )
         );
@@ -74,7 +74,7 @@ class CheckerTest {
     @Test
     void CH01_VariableDeclared_SucceedsWhenReferenced() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         varAssignment("DefaultWidth", px(10)),
                         rule("p", decl("width", varRef("DefaultWidth")))
                 )
@@ -87,7 +87,7 @@ class CheckerTest {
     @Test
     void CH01_VariableDeclaredWithAnotherVariable_Succeeds() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         varAssignment("FirstVar", px(10)),
                         varAssignment("SecondVar", varRef("FirstVar"))
                 )
@@ -100,7 +100,7 @@ class CheckerTest {
     @Test
     void CH01_VariableDeclaredWithAnotherVariable_FailsWhenRefUndefined() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         varAssignment("FirstVar", varRef("NotDeclaredVariable"))
                 )
         );
@@ -112,7 +112,7 @@ class CheckerTest {
     @Test
     void CH04_PropertyTypeMismatch_ScalarInWidth_Fails() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", decl("width", scalar(10)))
                 )
         );
@@ -124,7 +124,7 @@ class CheckerTest {
     @Test
     void CH05_IfCondition_ScalarAssignedToWidth_Fails() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", ifClause(bool(true), decl("width", scalar(10))))
                 )
         );
@@ -136,7 +136,7 @@ class CheckerTest {
     @Test
     void CH04_PropertyTypeMatch_PixelInWidth_Succeeds() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", decl("width", px(100)))
                 )
         );
@@ -148,7 +148,7 @@ class CheckerTest {
     @Test
     void CH04_PropertyTypeMismatch_VariableWrongTypeInProperty_Fails() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         varAssignment("DefaultWidth", px(10)),
                         rule("p", decl("color", varRef("DefaultWidth")))
                 )
@@ -161,7 +161,7 @@ class CheckerTest {
     @Test
     void CH06_VarDeclaredInsideIf_UsedOutside_Fails() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p",
                                 ifClause(bool(true), varAssignment("ScopedVar", px(10))),
                                 decl("width", varRef("ScopedVar"))
@@ -176,7 +176,7 @@ class CheckerTest {
     @Test
     void CH06_VarDeclaredInsideElse_UsedOutside_Fails() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p",
                                 ifElseClause(bool(true), varAssignment("ScopedElseVar", px(20))),
                                 decl("width", varRef("ScopedElseVar"))
@@ -191,7 +191,7 @@ class CheckerTest {
     @Test
     void CH06_VarDeclaredOutsideIf_UsedInside_Succeeds() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         varAssignment("GlobalWidth", px(15)),
                         rule("p",
                                 ifClause(bool(true), decl("width", varRef("GlobalWidth")))
@@ -206,7 +206,7 @@ class CheckerTest {
     @Test
     void CH06_VarReDeclared_Fails() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         varAssignment("GlobalWidth", px(15)),
                         varAssignment("GlobalWidth", px(15))
                 )
@@ -219,7 +219,7 @@ class CheckerTest {
     @Test
     void CH06_VarReDeclared_in_ifClause_Fails() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         varAssignment("GlobalWidth", px(15)),
                         rule("p",
                                 ifClause(bool(true), varAssignment("GlobalWidth", px(15)))
@@ -234,7 +234,7 @@ class CheckerTest {
     @Test
     void CH05_IfCondition_WithBooleanLiteral_Succeeds() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", ifClause(bool(true), decl("width", px(10))))
                 )
         );
@@ -246,7 +246,7 @@ class CheckerTest {
     @Test
     void CH05_IfCondition_WithScalar_Fails() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", ifClause(scalar(10), decl("width", px(10))))
                 )
         );
@@ -258,7 +258,7 @@ class CheckerTest {
     @Test
     void CH05_IfCondition_WithVariableRef_Succeeds() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         varAssignment("LightMode", bool(true)),
                         rule("p", ifClause(varRef("LightMode"), decl("width", px(10))))
                 )
@@ -271,7 +271,7 @@ class CheckerTest {
     @Test
     void CH05_IfCondition_WithVariableRef_FailsWhenNotBoolean() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         varAssignment("LightMode", px(10)),
                         rule("p", ifClause(varRef("LightMode"), decl("width", px(10))))
                 )
@@ -285,7 +285,7 @@ class CheckerTest {
     @Test
     void CH02_Add_ScalarPlusScalar_Succeeds() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", decl("width", addition(scalar(10), scalar(5))))
                 )
         );
@@ -297,7 +297,7 @@ class CheckerTest {
     @Test
     void CH02_Add_PixelPlusPixel_Succeeds() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", decl("width", addition(px(10), px(5))))
                 )
         );
@@ -309,7 +309,7 @@ class CheckerTest {
     @Test
     void CH02_Add_PixelPlusPercentage_Fails() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", decl("width", addition(px(10), percent(5))))
                 )
         );
@@ -321,7 +321,7 @@ class CheckerTest {
     @Test
     void CH02_Subtract_PercentageMinusScalar_Fails() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", decl("width", subtract(percent(10), scalar(2))))
                 )
         );
@@ -333,7 +333,7 @@ class CheckerTest {
     @Test
     void CH02_Subtract_ScalarMinusScalar_Succeeds() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", decl("width", subtract(scalar(5), scalar(2))))
                 )
         );
@@ -345,7 +345,7 @@ class CheckerTest {
     @Test
     void CH02_Multiply_ScalarTimesPixel_Succeeds() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", decl("width", multiply(scalar(2), px(10))))
                 )
         );
@@ -357,7 +357,7 @@ class CheckerTest {
     @Test
     void CH02_Multiply_PixelTimesScalar_Succeeds() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", decl("width", multiply(px(10), scalar(2))))
                 )
         );
@@ -369,7 +369,7 @@ class CheckerTest {
     @Test
     void CH02_Multiply_PixelTimesPixel_Fails() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", decl("width", multiply(px(10), px(5))))
                 )
         );
@@ -381,7 +381,7 @@ class CheckerTest {
     @Test
     void CH02_NestedComplexOperation_TypeMismatch_Fails() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p",
                                 decl("width",
                                         addition(
@@ -403,7 +403,7 @@ class CheckerTest {
     @Test
     void CH03_ColorInOperation_AddColorAndPixel_Fails() {
         AST ast = checkFixture(
-                stylesheet(
+                styleSheet(
                         rule("p", decl("color", addition(color("#ff0000"), px(10))))
                 )
         );

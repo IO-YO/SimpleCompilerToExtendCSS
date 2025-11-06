@@ -5,10 +5,13 @@ import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.operations.SubtractOperation;
+import nl.han.ica.icss.ast.selectors.ClassSelector;
+import nl.han.ica.icss.ast.selectors.IdSelector;
 import nl.han.ica.icss.ast.selectors.TagSelector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class ASTBuilder {
 
@@ -39,8 +42,11 @@ public class ASTBuilder {
     public static SubtractOperation subtract(Expression a, Expression b) {
         return new SubtractOperation(a, b);
     }
+    public static TagSelector tag(String name) {return new TagSelector(name);}
+    public static IdSelector id(String name) {return new IdSelector(name);}
+    public static ClassSelector cls(String name) {return new ClassSelector(name);}
 
-    public static AST stylesheet(ASTNode... nodes) {
+    public static AST styleSheet(ASTNode... nodes) {
         StyleSheet sheet = new StyleSheet();
         for (ASTNode node : nodes) {
             sheet.addChild(node);
@@ -53,6 +59,15 @@ public class ASTBuilder {
         rule.addChild(new TagSelector(tagName));
         for (ASTNode decl : declarations) {
             rule.addChild(decl);
+        }
+        return rule;
+    }
+
+    public static StyleRule rule(Selector selector, Declaration ... declarations) {
+        StyleRule rule = new StyleRule();
+        rule.addChild(selector);
+        for(Declaration d : declarations) {
+            rule.addChild(d);
         }
         return rule;
     }

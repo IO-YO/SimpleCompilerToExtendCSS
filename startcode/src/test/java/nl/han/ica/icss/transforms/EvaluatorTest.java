@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class EvaluatorTest {
 
     public record EvalCase(String name, Expression input, Literal expected) {
+        @Override @NotNull public String toString() {return name;}
     }
 
     private void assertEvaluatedCorrectly(EvaluatorTestBuilder.ASTPair test) {

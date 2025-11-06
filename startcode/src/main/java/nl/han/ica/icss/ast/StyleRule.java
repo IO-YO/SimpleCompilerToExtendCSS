@@ -8,9 +8,9 @@ public class StyleRule extends ASTNode {
 	public ArrayList<Selector> selectors = new ArrayList<>();
 	public ArrayList<ASTNode> body = new ArrayList<>();
 
-    public StyleRule() { }
+	public StyleRule() {}
 
-    public StyleRule(Selector selector, ArrayList<ASTNode> body) {
+	public StyleRule(Selector selector, ArrayList<ASTNode> body) {
     	this.selectors = new ArrayList<>();
     	this.selectors.add(selector);
     	this.body = body;
@@ -18,7 +18,7 @@ public class StyleRule extends ASTNode {
 
     @Override
 	public String getNodeLabel() {
-		return "Stylerule";
+		return "StyleRule";
 	}
 
 	@Override
