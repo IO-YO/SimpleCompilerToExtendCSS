@@ -23,22 +23,31 @@ class GeneratorTest {
         generator = new Generator();
     }
 
+    static String css(String selector, String... body) {
+        String indent = "  ";
+        String lines = java.util.Arrays.stream(body)
+                .map(l -> indent + l)
+                .reduce((a,b) -> a + "\n" + b).orElse("");
+        if (lines.contentEquals("")) return selector + " {\n}";
+        return selector + " {\n" + lines + "\n}";
+    }
+
     static Stream<Arguments> styleRulesTestCases() {
         return Stream.of(
                 Arguments.of(
                         "Id Selector",
                         styleSheet(rule(id("menu"))),
-                        "#menu {\n}"
+                        css("#menu")
                 ),
                 Arguments.of(
                         "Class Selector",
                         styleSheet(rule(cls("class"))),
-                        ".class {\n}"
+                        css(".class")
                 ),
                 Arguments.of(
                         "Tag Selector",
                         styleSheet(rule(tag("p"))),
-                        "p {\n}"
+                        css("p")
                 )
         );
     }
@@ -51,32 +60,21 @@ class GeneratorTest {
     }
 
     static Stream<Arguments> literalTestCases() {
-        /*
-        p {
-            ...
-        }
-         */
-        Function<Declaration, AST> ASTTemplate = decl -> styleSheet(rule("p"), decl);
-        Function<String, String> expectedTemplate = decl -> "p {\n\r" + decl + "\n}";
+        Function<List<Declaration>, AST> ast = decl -> styleSheet(rule(tag("p"), decl));
 
         return Stream.of(
                 Arguments.of(
                         "name",
-                        ASTTemplate.apply(decl("width", px(10)),
-
-
-                                )
+                        ast.apply(List.of(decl("width", px(10)))),
+                        css("p", "width: 10px;")
                 )
         );
     }
 
-    private String indent(int level) {
-        return "  ".repeat(level);
-    }
-
     @ParameterizedTest(name = "{0}")
-    @MethodSource("")
+    @MethodSource("literalTestCases")
     void testAll_Literals(String name, AST ast, String expected) {
-
+        String actual = generator.generate(ast);
+        assertEquals(expected, actual);
     }
 }

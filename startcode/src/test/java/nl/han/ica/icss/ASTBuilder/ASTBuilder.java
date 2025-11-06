@@ -72,6 +72,13 @@ public class ASTBuilder {
         return rule;
     }
 
+    public static StyleRule rule(Selector selector, List<Declaration> declarations) {
+        StyleRule rule = new StyleRule();
+        rule.addChild(selector);
+        declarations.forEach(rule::addChild);
+        return rule;
+    }
+
     public static Declaration decl(String property, Expression expression) {
         return new Declaration(property, expression);
     }
