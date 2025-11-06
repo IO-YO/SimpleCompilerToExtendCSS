@@ -1,5 +1,6 @@
 package nl.han.ica.icss.checker;
 
+import nl.han.ica.icss.scoping.ScopeGuard;
 import nl.han.ica.icss.scoping.ScopeManager;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
@@ -50,23 +51,23 @@ public class Checker {
             }
 
             if(child instanceof StyleRule rule) {
-                scopeManager.enterScope();
-                checkBody(rule.getChildren());
-                scopeManager.exitScope();
+                try (var ignore = new ScopeGuard(scopeManager)) {
+                    checkBody(rule.getChildren());
+                }
                 continue;
             }
 
             if(child instanceof IfClause ifc) {
                 checkIfCondition(ifc);
 
-                scopeManager.enterScope();
-                checkBody(ifc.body);
-                scopeManager.exitScope();
+                try (var ignore = new ScopeGuard(scopeManager)) {
+                    checkBody(ifc.body);
+                }
 
                 if(ifc.elseClause != null) {
-                    scopeManager.enterScope();
-                    checkBody(ifc.elseClause.getChildren());
-                    scopeManager.exitScope();
+                    try (var ignore = new ScopeGuard(scopeManager)) {
+                        checkBody(ifc.elseClause.getChildren());
+                    }
                 }
             }
 
