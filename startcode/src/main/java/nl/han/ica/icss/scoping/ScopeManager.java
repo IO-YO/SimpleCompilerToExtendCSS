@@ -10,6 +10,7 @@ public class ScopeManager<T> implements IScopeManager<T> {
         scopes = new ArrayDeque<>();
     }
 
+
     @Override
     public void enterScope() {
         scopes.push(new HashMap<>());
@@ -49,5 +50,23 @@ public class ScopeManager<T> implements IScopeManager<T> {
             }
         }
         return false;
+    }
+
+    public static final class Scope implements AutoCloseable {
+        private final ScopeManager<?> mgr;
+
+        private Scope(ScopeManager<?> mgr) {
+            this.mgr = mgr;
+        }
+
+        @Override
+        public void close() {
+            mgr.exitScope();
+        }
+    }
+
+    public Scope enter() {
+        enterScope();
+        return new Scope(this);
     }
 }

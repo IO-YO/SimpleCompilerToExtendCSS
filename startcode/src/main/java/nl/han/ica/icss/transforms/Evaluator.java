@@ -18,9 +18,9 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
     }
 
     private void transform(StyleSheet sheet) {
-        scopeManager.enterScope();
-        transformBody(sheet.getChildren());
-        scopeManager.exitScope();
+        try (var _ = scopeManager.enter()) {
+            transformBody(sheet.getChildren());
+        }
     }
 
     private void transformBody(ArrayList<ASTNode> body) {
@@ -41,9 +41,9 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
             }
 
             if (child instanceof StyleRule rule) {
-                scopeManager.enterScope();
-                transformBody(rule.body);
-                scopeManager.exitScope();
+                try (var _ = scopeManager.enter()) {
+                    transformBody(rule.body);
+                }
                 i++;
                 continue;
             }
@@ -54,9 +54,9 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
                         ? ifc.body
                         : (ifc.elseClause != null ? ifc.elseClause.body : new ArrayList<>());
 
-                scopeManager.enterScope();
-                transformBody(chosenBody);
-                scopeManager.exitScope();
+                try (var _ = scopeManager.enter()) {
+                    transformBody(chosenBody);
+                }
 
                 body.remove(i);
                 if (!chosenBody.isEmpty()) {

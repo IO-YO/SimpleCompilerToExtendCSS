@@ -1,6 +1,5 @@
 package nl.han.ica.icss.checker;
 
-import nl.han.ica.icss.scoping.ScopeGuard;
 import nl.han.ica.icss.scoping.ScopeManager;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
@@ -28,14 +27,15 @@ public class Checker {
     );
 
     public void check(AST ast) {
-        if (ast == null
-                || ast.root == null) throw new IllegalArgumentException("AST or root cannot be null");
+        if (ast == null || ast.root == null) {
+            throw new IllegalArgumentException("AST or root cannot be null");
+        }
 
         scopeManager = new ScopeManager<>();
 
-        scopeManager.enterScope();
-        checkBody(ast.root.getChildren());
-        scopeManager.exitScope();
+        try (var _ = scopeManager.enter()) {
+            checkBody(ast.root.getChildren());
+        }
     }
 
     private void checkBody(List<ASTNode> body) {
@@ -51,7 +51,7 @@ public class Checker {
             }
 
             if(child instanceof StyleRule rule) {
-                try (var ignore = new ScopeGuard(scopeManager)) {
+                try (var _ = scopeManager.enter()) {
                     checkBody(rule.getChildren());
                 }
                 continue;
@@ -60,12 +60,12 @@ public class Checker {
             if(child instanceof IfClause ifc) {
                 checkIfCondition(ifc);
 
-                try (var ignore = new ScopeGuard(scopeManager)) {
+                try (var _ = scopeManager.enter()) {
                     checkBody(ifc.body);
                 }
 
                 if(ifc.elseClause != null) {
-                    try (var ignore = new ScopeGuard(scopeManager)) {
+                    try (var _ = scopeManager.enter()) {
                         checkBody(ifc.elseClause.getChildren());
                     }
                 }
@@ -91,36 +91,46 @@ public class Checker {
     }
 
     private ExpressionType resolveExpressionType(Expression expr, ASTNode errorTarget) {
-        if (expr instanceof VariableReference varRef) {
-            ExpressionType type = scopeManager.resolve(varRef.name);
-            if (type == null) {
-                errorTarget.setError("Unknown variable '" + varRef.name + "'");
-                return ExpressionType.UNDEFINED;
-            }
-            return type;
-        }
-        return typeMap.getOrDefault(expr.getClass(), ExpressionType.UNDEFINED);
+        return switch (expr) {
+            case VariableReference ref -> resolveVariableRef(ref, errorTarget);
+            case Operation op -> resolveOperation(op, errorTarget);
+            default -> typeMap.getOrDefault(expr.getClass(), ExpressionType.UNDEFINED);
+        };
     }
 
-    private void checkDeclaration(Declaration node) {
-        String propertyName = node.property.name;
+    private ExpressionType resolveOperation(Operation op, ASTNode errorTarget) {
+        return null;
+    }
+
+    private ExpressionType resolveVariableRef(VariableReference ref, ASTNode errorTarget) {
+        ExpressionType type = scopeManager.resolve(ref.name);
+        if (type == null) {
+            errorTarget.setError("Unknown variable '" + ref.name + "'");
+            return ExpressionType.UNDEFINED;
+        }
+        return type;
+    }
+
+    private void checkDeclaration(Declaration decl) {
+        String propertyName = decl.property.name;
         Set<ExpressionType> allowed = allowedTypes.get(propertyName);
 
         if (allowed == null) {
-            node.setError("Unknown property '" + propertyName + "'");
+            decl.setError("Unknown property '" + propertyName + "'");
             return;
         }
 
-        if (node.expression == null) {
-            node.setError("Property '" + propertyName + "' must have a value");
+        if (decl.expression == null) {
+            decl.setError("Property '" + propertyName + "' must have a value");
             return;
         }
 
-        ExpressionType actualType = resolveExpressionType(node.expression, node);
-        if (actualType == ExpressionType.UNDEFINED
-                || allowed.contains(actualType))
+        ExpressionType actualType = resolveExpressionType(decl.expression, decl);
+        if (actualType == ExpressionType.UNDEFINED || allowed.contains(actualType)){
             return;
+        }
 
-        node.setError("Invalid value type '" + actualType + "' for property '" + propertyName + "'");
+        decl.setError("Invalid value type '" + actualType + "' for property '" + propertyName + "'");
     }
+
 }
