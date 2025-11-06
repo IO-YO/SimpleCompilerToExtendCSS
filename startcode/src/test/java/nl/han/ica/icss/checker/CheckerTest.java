@@ -192,5 +192,134 @@ class CheckerTest {
         }
     }
 
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @Nested
+    @DisplayName("CH02: Arithmetic typing")
+    class CH02_Operations {
+
+        enum OpName {ADD, SUB, MUL}
+
+        enum LitName {PIXEL, PERCENTAGE, SCALAR, COLOR, BOOL}
+
+        private Expression lit(LitName lit) {
+            return switch (lit) {
+                case PIXEL -> px(10);
+                case PERCENTAGE -> percent(10);
+                case SCALAR -> scalar(10);
+                case COLOR -> color("#112233");
+                case BOOL -> bool(true);
+            };
+        }
+
+        private Expression make(OpName op, Expression l, Expression r) {
+            return switch (op) {
+                case ADD -> addition(l, r);
+                case SUB -> subtract(l, r);
+                case MUL -> multiply(l, r);
+            };
+        }
+
+        Stream<Arguments> subCases() {
+            return Stream.of(
+                    Arguments.of(OpName.SUB, LitName.PIXEL, LitName.PIXEL, true),
+                    Arguments.of(OpName.SUB, LitName.PERCENTAGE, LitName.PERCENTAGE, true),
+                    Arguments.of(OpName.SUB, LitName.SCALAR, LitName.SCALAR, true),
+
+                    Arguments.of(OpName.SUB, LitName.PIXEL, LitName.PERCENTAGE, false),
+                    Arguments.of(OpName.SUB, LitName.PIXEL, LitName.SCALAR, false),
+                    Arguments.of(OpName.SUB, LitName.PERCENTAGE, LitName.SCALAR, false),
+
+                    Arguments.of(OpName.SUB, LitName.COLOR, LitName.COLOR, false),
+                    Arguments.of(OpName.SUB, LitName.COLOR, LitName.PIXEL, false),
+                    Arguments.of(OpName.SUB, LitName.PIXEL, LitName.COLOR, false),
+                    Arguments.of(OpName.SUB, LitName.BOOL, LitName.PIXEL, false),
+                    Arguments.of(OpName.SUB, LitName.PIXEL, LitName.BOOL, false),
+                    Arguments.of(OpName.SUB, LitName.BOOL, LitName.BOOL, false)
+            );
+        }
+
+        @ParameterizedTest(name = "{0}: {1}, {2} = {3}")
+        @MethodSource("subCases")
+        void SubtractOpMatrix(OpName op, LitName left, LitName right, boolean expectedValid) {
+            Expression node = make(op, lit(left), lit(right));
+            AST ast = checkFixture(styleSheet(varAssignment("Test", node)));
+
+            if (expectedValid) {
+                assertNoErrors(ast);
+            } else {
+                assertSingleError(ast, "Sub");
+            }
+        }
+
+        Stream<Arguments> addCases() {
+            return Stream.of(
+                    Arguments.of(OpName.ADD, LitName.PIXEL, LitName.PIXEL, true),
+                    Arguments.of(OpName.ADD, LitName.PERCENTAGE, LitName.PERCENTAGE, true),
+                    Arguments.of(OpName.ADD, LitName.SCALAR, LitName.SCALAR, true),
+
+                    Arguments.of(OpName.ADD, LitName.PIXEL, LitName.PERCENTAGE, false),
+                    Arguments.of(OpName.ADD, LitName.PIXEL, LitName.SCALAR, false),
+                    Arguments.of(OpName.ADD, LitName.PERCENTAGE, LitName.SCALAR, false),
+
+                    Arguments.of(OpName.ADD, LitName.COLOR, LitName.PIXEL, false),
+                    Arguments.of(OpName.ADD, LitName.PIXEL, LitName.COLOR, false),
+                    Arguments.of(OpName.ADD, LitName.COLOR, LitName.COLOR, false),
+                    Arguments.of(OpName.ADD, LitName.BOOL, LitName.PIXEL, false),
+                    Arguments.of(OpName.ADD, LitName.PIXEL, LitName.BOOL, false),
+                    Arguments.of(OpName.ADD, LitName.BOOL, LitName.BOOL, false)
+            );
+        }
+
+        @ParameterizedTest(name = "{0}: {1}, {2} = {3}")
+        @MethodSource("addCases")
+        void additionOpMatrix(OpName op, LitName left, LitName right, boolean expectedValid) {
+            Expression node = make(op, lit(left), lit(right));
+            AST ast = checkFixture(styleSheet(varAssignment("Test", node)));
+
+            if (expectedValid) {
+                assertNoErrors(ast);
+            } else {
+                assertSingleError(ast, "Add");
+            }
+        }
+
+        Stream<Arguments> multiplyCases() {
+            return Stream.of(
+                    Arguments.of(OpName.MUL, LitName.SCALAR, LitName.PIXEL, true),
+                    Arguments.of(OpName.MUL, LitName.PIXEL, LitName.SCALAR, true),
+                    Arguments.of(OpName.MUL, LitName.SCALAR, LitName.PERCENTAGE, true),
+                    Arguments.of(OpName.MUL, LitName.PERCENTAGE, LitName.SCALAR, true),
+                    Arguments.of(OpName.MUL, LitName.SCALAR, LitName.SCALAR, true),
+
+                    Arguments.of(OpName.MUL, LitName.PIXEL, LitName.PIXEL, false),
+                    Arguments.of(OpName.MUL, LitName.PERCENTAGE, LitName.PERCENTAGE, false),
+                    Arguments.of(OpName.MUL, LitName.PIXEL, LitName.PERCENTAGE, false),
+                    Arguments.of(OpName.MUL, LitName.PERCENTAGE, LitName.PIXEL, false),
+
+                    Arguments.of(OpName.MUL, LitName.COLOR, LitName.PIXEL, false),
+                    Arguments.of(OpName.MUL, LitName.PIXEL, LitName.COLOR, false),
+                    Arguments.of(OpName.MUL, LitName.COLOR, LitName.SCALAR, false),
+                    Arguments.of(OpName.MUL, LitName.SCALAR, LitName.COLOR, false),
+                    Arguments.of(OpName.MUL, LitName.COLOR, LitName.COLOR, false),
+                    Arguments.of(OpName.MUL, LitName.BOOL, LitName.SCALAR, false),
+                    Arguments.of(OpName.MUL, LitName.SCALAR, LitName.BOOL, false),
+                    Arguments.of(OpName.MUL, LitName.BOOL, LitName.BOOL, false)
+            );
+        }
+
+        @ParameterizedTest(name = "{0}: {1}, {2} = {3}")
+        @MethodSource("multiplyCases")
+        void multiplyMatrix(OpName op, LitName left, LitName right, boolean expectedValid) {
+            Expression node = make(op, lit(left), lit(right));
+            AST ast = checkFixture(styleSheet(varAssignment("Test", node)));
+
+            if (expectedValid) {
+                assertNoErrors(ast);
+            } else {
+                assertSingleError(ast, "multiply");
+            }
+        }
+
+    }
 
 }
