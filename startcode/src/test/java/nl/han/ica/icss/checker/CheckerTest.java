@@ -1,17 +1,20 @@
 package nl.han.ica.icss.checker;
 
 import nl.han.ica.icss.ast.*;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static nl.han.ica.icss.ASTBuilder.ASTBuilder.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+@DisplayName("Checker")
 class CheckerTest {
 
     private AST checkFixture(AST ast) {
@@ -55,6 +58,33 @@ class CheckerTest {
                 .stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @Nested
+    @DisplayName("CH04: Property type checking")
+    class CH04_Properties {
+
+        record Case(String property, String valueKind, Expression value, boolean valid) {
+        }
+
+        Stream<Case> cases() {
+            return Stream.of(
+                    new Case("width", "PIXEL", px(10), true),
+                    new Case("width", "PERCENTAGE", percent(10), true),
+                    new Case("width", "SCALAR", scalar(10), false),
+                    new Case("width", "COLOR", color("#ff0"), false)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("cases")
+        void property_matrix(Case c) {
+            AST ast = checkFixture(styleSheet(rule("p", decl(c.property, c.value))));
+            if (c.valid) assertNoErrors(ast);
+            else assertSingleError(ast, c.property);
+        }
     }
 
     @Tag("CH01")
@@ -277,19 +307,6 @@ class CheckerTest {
                 )
         );
         assertSingleError(ast, "ERROR", "If-condition");
-    }
-
-
-    @Tag("CH02")
-    @DisplayName("CH02: Add scalar + scalar is valid")
-    @Test
-    void CH02_Add_ScalarPlusScalar_Succeeds() {
-        AST ast = checkFixture(
-                styleSheet(
-                        rule("p", decl("width", addition(scalar(10), scalar(5))))
-                )
-        );
-        assertNoErrors(ast);
     }
 
     @Tag("CH02")

@@ -26,4 +26,7 @@ public interface IScopeManager<T> {
      * @return The type of the variable, or null if not found.
      */
     T resolve(String name);
+
+    boolean existsInCurrentScope(String name);
 }
+

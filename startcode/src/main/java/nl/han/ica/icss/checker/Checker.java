@@ -1,5 +1,7 @@
 package nl.han.ica.icss.checker;
 
+import nl.han.ica.icss.ast.operations.AddOperation;
+import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.scoping.ScopeManager;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
@@ -93,13 +95,30 @@ public class Checker {
     private ExpressionType resolveExpressionType(Expression expr, ASTNode errorTarget) {
         return switch (expr) {
             case VariableReference ref -> resolveVariableRef(ref, errorTarget);
-            case Operation op -> resolveOperation(op, errorTarget);
+            case Operation op -> resolveOperationType(op, errorTarget);
             default -> typeMap.getOrDefault(expr.getClass(), ExpressionType.UNDEFINED);
         };
     }
 
-    private ExpressionType resolveOperation(Operation op, ASTNode errorTarget) {
+    private ExpressionType resolveOperationType(Operation op, ASTNode errorTarget) {
+        var left = resolveExpressionType(op.lhs, errorTarget);
+        var right = resolveExpressionType(op.rhs, errorTarget);
+
+        if(left == ExpressionType.UNDEFINED || right == ExpressionType.UNDEFINED) {
+            errorTarget.setError("Unknown Expression Type: " + errorTarget.getNodeLabel());
+            return ExpressionType.UNDEFINED;
+        }
+
+        if(op instanceof AddOperation || op instanceof SubtractOperation) {
+            if(left == right && (left == ExpressionType.PERCENTAGE || left == ExpressionType.SCALAR || left == ExpressionType.PIXEL)) {
+                return left;
+            }
+            errorTarget.setError("Can't Subtract OR Add " + left.name() + " from " + right.name());
+            return ExpressionType.UNDEFINED;
+        }
+
         return null;
+
     }
 
     private ExpressionType resolveVariableRef(VariableReference ref, ASTNode errorTarget) {

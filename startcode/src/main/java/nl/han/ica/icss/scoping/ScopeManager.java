@@ -10,7 +10,6 @@ public class ScopeManager<T> implements IScopeManager<T> {
         scopes = new ArrayDeque<>();
     }
 
-
     @Override
     public void enterScope() {
         scopes.push(new HashMap<>());
@@ -43,6 +42,7 @@ public class ScopeManager<T> implements IScopeManager<T> {
         return null;
     }
 
+    @Override
     public boolean existsInCurrentScope(String name) {
         for (Map<String, T> scope : scopes) {
             if (scope.containsKey(name)) {
@@ -66,7 +66,7 @@ public class ScopeManager<T> implements IScopeManager<T> {
     }
 
     public Scope enter() {
-        enterScope();
+        this.enterScope();
         return new Scope(this);
     }
 }
