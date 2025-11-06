@@ -2,56 +2,68 @@ package nl.han.ica.icss.generator;
 
 
 import nl.han.ica.icss.ast.*;
+import nl.han.ica.icss.ast.literals.ColorLiteral;
+import nl.han.ica.icss.ast.literals.PercentageLiteral;
+import nl.han.ica.icss.ast.literals.PixelLiteral;
+import nl.han.ica.icss.ast.literals.ScalarLiteral;
 import nl.han.ica.icss.ast.selectors.ClassSelector;
 import nl.han.ica.icss.ast.selectors.IdSelector;
 import nl.han.ica.icss.ast.selectors.TagSelector;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Objects;
 
 public class Generator {
 
-	public String generate(AST ast) {
-		String css = "";
-		css = generateStyleSheet(ast.root.body);
-        return css;
-	}
+    private static final String IDENT = "  ";
 
-    private String generateStyleSheet(List<ASTNode> body) {
-		StringBuilder sheet = new StringBuilder();
-		for(ASTNode child : body) {
+    public String generate(AST ast) {
+        StringBuilder css = new StringBuilder();
+        generateStyleSheet(ast.root.getChildren(), css);
+        return css.toString().trim();
+    }
+
+    private void generateStyleSheet(List<ASTNode> body, StringBuilder css) {
+        for (ASTNode child : body) {
             if (child instanceof StyleRule) {
-                sheet.append(generateStyleRule(child));
+                generateStyleRule((StyleRule) child, css);
             }
-		}
-
-		return sheet.toString();
-
+        }
     }
 
-    private String generateStyleRule(ASTNode rule) {
-		StringBuilder cssRule = new StringBuilder();
-		for(ASTNode child : rule.getChildren()) {
-			if(child instanceof Selector s) {
-				switch(s) {
-					case TagSelector tag -> cssRule.append(tag.tag);
-					case IdSelector id -> cssRule.append("#").append(id.id);
-					case ClassSelector cls -> cssRule.append(".").append(cls.cls);
-					default -> {}
-				}
-			}
-		}
-
-
-		cssRule.append(" {").append('\n');
-		for(ASTNode child : rule.getChildren()) {
-			if(child instanceof Declaration) {
-
-			}
-		}
-
-		cssRule.append("}");
-
-        return cssRule.toString();
+    private void generateStyleRule(StyleRule rule, StringBuilder css) {
+        css.append(selectorToString(rule.selectors)).append(" {\n");
+        for(ASTNode child : rule.body) {
+            if(child instanceof Declaration decl) {
+                css.append(IDENT).append(declarationToString(decl)).append("\n");
+            }
+        }
+        css.append("}\n");
     }
+
+    private String selectorToString(@NotNull List<Selector> selectors) {
+        Selector selector = selectors.getFirst();
+        return switch (selector) {
+            case TagSelector tag -> tag.tag;
+            case IdSelector id -> "#" + id.id;
+            case ClassSelector cls -> "." + cls.cls;
+            default -> selector.getNodeLabel();
+        };
+    }
+
+    private String declarationToString(Declaration decl) {
+        return decl.property.name + ": " + literalToString(decl.expression) + ";";
+    }
+
+    private String literalToString(Expression lit) {
+        return String.valueOf(switch(lit) {
+            case PixelLiteral p -> p.value + "px";
+            case PercentageLiteral p -> p.value + "%";
+            case ColorLiteral c -> c.value;
+            case ScalarLiteral s -> s.value;
+            default -> lit.getNodeLabel();
+        });
+    }
+
 }
+
