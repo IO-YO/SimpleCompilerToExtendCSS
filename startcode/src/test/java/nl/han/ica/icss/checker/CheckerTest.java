@@ -60,6 +60,14 @@ class CheckerTest {
                 .collect(Collectors.toList());
     }
 
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @Nested
+    @Tag("CH03")
+    @DisplayName("CH03: Color Operation Checking")
+    class CH03_ColorOperationCheck {
+
+    }
+
 
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @Nested

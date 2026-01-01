@@ -77,14 +77,14 @@ public class Checker {
     }
 
     private void checkIfCondition(IfClause ifc) {
-        ExpressionType type = resolveExpressionType(ifc.conditionalExpression, ifc);
+        ExpressionType type = resolveExpressionType(ifc.conditionalExpression);
         if (type != ExpressionType.BOOL) {
             ifc.setError("If-condition must be a boolean, but got: " + type);
         }
     }
 
     private void handleVariableAssignment(VariableAssignment varAss) {
-        ExpressionType type = resolveExpressionType(varAss.expression, varAss);
+        ExpressionType type = resolveExpressionType(varAss.expression);
         String varName = varAss.name.name;
         if (scopeManager.existsInCurrentScope(varName)) {
             varAss.setError("Variable '" + varName + "' redeclared in the same scope");
@@ -92,20 +92,19 @@ public class Checker {
         scopeManager.declare(varName, type);
     }
 
-    private ExpressionType resolveExpressionType(Expression expr, ASTNode errorTarget) {
+    private ExpressionType resolveExpressionType(Expression expr) {
         return switch (expr) {
-            case VariableReference ref -> resolveVariableRef(ref, errorTarget);
-            case Operation op -> resolveOperationType(op, errorTarget);
+            case VariableReference ref -> resolveVariableRef(ref);
+            case Operation op -> resolveOperationType(op);
             default -> typeMap.getOrDefault(expr.getClass(), ExpressionType.UNDEFINED);
         };
     }
 
-    private ExpressionType resolveOperationType(Operation op, ASTNode errorTarget) {
-        var left = resolveExpressionType(op.lhs, errorTarget);
-        var right = resolveExpressionType(op.rhs, errorTarget);
+    private ExpressionType resolveOperationType(Operation op) {
+        var left = resolveExpressionType(op.lhs);
+        var right = resolveExpressionType(op.rhs);
 
         if(left == ExpressionType.UNDEFINED || right == ExpressionType.UNDEFINED) {
-            errorTarget.setError("Unknown Expression Type: " + errorTarget.getNodeLabel());
             return ExpressionType.UNDEFINED;
         }
 
@@ -113,7 +112,7 @@ public class Checker {
             if(left == right && (left == ExpressionType.PERCENTAGE || left == ExpressionType.SCALAR || left == ExpressionType.PIXEL)) {
                 return left;
             }
-            errorTarget.setError("Can't Subtract OR Add " + left.name() + " from " + right.name());
+            op.setError("Can't Subtract OR Add " + left.name() + " from " + right.name());
             return ExpressionType.UNDEFINED;
         }
 
@@ -121,10 +120,10 @@ public class Checker {
 
     }
 
-    private ExpressionType resolveVariableRef(VariableReference ref, ASTNode errorTarget) {
+    private ExpressionType resolveVariableRef(VariableReference ref) {
         ExpressionType type = scopeManager.resolve(ref.name);
         if (type == null) {
-            errorTarget.setError("Unknown variable '" + ref.name + "'");
+            ref.setError("Unknown variable '" + ref.name + "'");
             return ExpressionType.UNDEFINED;
         }
         return type;
@@ -144,7 +143,7 @@ public class Checker {
             return;
         }
 
-        ExpressionType actualType = resolveExpressionType(decl.expression, decl);
+        ExpressionType actualType = resolveExpressionType(decl.expression);
         if (actualType == ExpressionType.UNDEFINED || allowed.contains(actualType)){
             return;
         }
