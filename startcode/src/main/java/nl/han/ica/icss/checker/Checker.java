@@ -93,11 +93,25 @@ public class Checker {
     }
 
     private ExpressionType resolveExpressionType(Expression expr) {
+        if (expr == null) throw new IllegalArgumentException("Expression was null. AST invariant violated.");
+
         return switch (expr) {
             case VariableReference ref -> resolveVariableRef(ref);
             case Operation op -> resolveOperationType(op);
-            default -> typeMap.getOrDefault(expr.getClass(), ExpressionType.UNDEFINED);
+            case Literal lit -> resolveLiteralType(lit);
+            default -> {
+                expr.setError("Unsupported expression: " + expr.getClass().getSimpleName());
+                yield ExpressionType.UNDEFINED;
+            }
         };
+    }
+
+    private ExpressionType resolveLiteralType(Literal lit) {
+        ExpressionType t = typeMap.get(lit.getClass());
+        if (t != null) return t;
+
+        lit.setError("Unknown literal type: " + lit.getClass().getSimpleName());
+        return ExpressionType.UNDEFINED;
     }
 
     private ExpressionType resolveOperationType(Operation op) {
@@ -116,7 +130,8 @@ public class Checker {
             return ExpressionType.UNDEFINED;
         }
 
-        return null;
+        op.setError("Unknown operation: " + op.getClass().getSimpleName());
+        return ExpressionType.UNDEFINED;
 
     }
 
