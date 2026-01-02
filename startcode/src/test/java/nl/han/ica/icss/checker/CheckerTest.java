@@ -327,7 +327,71 @@ class CheckerTest {
                 assertSingleError(ast, "Multiply");
             }
         }
+        Stream<Arguments> mixedOperationCases() {
+            return Stream.of(
+                    Arguments.of(
+                            "valid: 5px + 5px * 10 - 10px + 20px",
+                            addition(
+                                    subtract(
+                                            addition(px(5), multiply(px(5), scalar(10))),
+                                            px(10)
+                                    ),
+                                    px(20)
+                            ),
+                            true,
+                            null
+                    ),
 
+                    Arguments.of(
+                            "valid: 10% + 5% * 2 - 3%",
+                            subtract(
+                                    addition(percent(10), multiply(percent(5), scalar(2))),
+                                    percent(3)
+                            ),
+                            true,
+                            null
+                    ),
+
+                    Arguments.of(
+                            "invalid: 5 + 5 * 10 - 10 + 20px",
+                            addition(
+                                    subtract(
+                                            addition(scalar(5), multiply(scalar(5), scalar(10))),
+                                            scalar(10)
+                                    ),
+                                    px(20)
+                            ),
+                            false,
+                            "Add"
+                    ),
+
+                    Arguments.of(
+                            "invalid: 5px + 5% * 10",
+                            addition(px(5), multiply(percent(5), scalar(10))),
+                            false,
+                            "Add"
+                    ),
+
+                    Arguments.of(
+                            "invalid: (5px + 5px) * 10px",
+                            multiply(addition(px(5), px(5)), px(10)),
+                            false,
+                            "Multiply"
+                    )
+            );
+        }
+
+        @ParameterizedTest(name = "{0}")
+        @MethodSource("mixedOperationCases")
+        void mixed_operations_typing(String name, Expression expr, boolean expectedValid, String expectedErrorPart) {
+            AST ast = checkFixture(styleSheet(varAssignment("Test", expr)));
+
+            if (expectedValid) {
+                assertNoErrors(ast);
+            } else {
+                assertSingleError(ast, expectedErrorPart);
+            }
+        }
     }
 
 }
