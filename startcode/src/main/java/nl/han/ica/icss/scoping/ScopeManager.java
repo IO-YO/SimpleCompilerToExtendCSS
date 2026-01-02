@@ -48,10 +48,10 @@ public class ScopeManager<T> implements IScopeManager<T> {
         return null;
     }
 
-    @Override
-    public boolean existsInCurrentScope(String name) {
-        Map<String, T> current = scopes.peek();
-        return current != null && current.containsKey(name);
+    public void inNewScope(Runnable work) {
+        try (var ignored = enter()) {
+            work.run();
+        }
     }
 
     public static final class Scope implements AutoCloseable {

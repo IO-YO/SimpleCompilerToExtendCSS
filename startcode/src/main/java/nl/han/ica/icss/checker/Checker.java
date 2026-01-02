@@ -25,16 +25,10 @@ public class Checker {
     );
 
     public void check(AST ast) {
-        if (ast == null || ast.root == null) {
-            throw new IllegalArgumentException("AST or root cannot be null");
-        }
-
         // TODO: Make checker stateless; it's not because of this
         scopeManager = new ScopeManager<>();
 
-        try (var _ = scopeManager.enter()) {
-            checkBody(ast.root.getChildren());
-        }
+        scopeManager.inNewScope(() -> checkBody(ast.root.getChildren()));
     }
 
     private void checkBody(List<ASTNode> body) {
@@ -51,22 +45,16 @@ public class Checker {
     }
 
     private void handleStyleRule(StyleRule rule) {
-        try (var _ = scopeManager.enter()) {
-            checkBody(rule.getChildren());
-        }
+        scopeManager.inNewScope(() -> checkBody(rule.getChildren()));
     }
 
     private void handleIfClause(IfClause ifc) {
         checkIfCondition(ifc);
 
-        try (var _ = scopeManager.enter()) {
-            checkBody(ifc.body);
-        }
+        scopeManager.inNewScope(() -> checkBody(ifc.body));
 
         if (ifc.elseClause != null) {
-            try (var _ = scopeManager.enter()) {
-                checkBody(ifc.elseClause.getChildren());
-            }
+            scopeManager.inNewScope(() -> checkBody(ifc.elseClause.getChildren()));
         }
     }
 

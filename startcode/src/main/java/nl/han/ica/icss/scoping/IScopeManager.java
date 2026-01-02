@@ -27,6 +27,5 @@ public interface IScopeManager<T> {
      */
     T resolve(String name);
 
-    boolean existsInCurrentScope(String name);
 }
 

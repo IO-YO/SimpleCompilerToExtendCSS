@@ -6,6 +6,7 @@ import nl.han.ica.icss.ast.operations.*;
 import nl.han.ica.icss.scoping.ScopeManager;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Evaluator implements Transform, ExpressionVisitor<Literal> {
 
@@ -13,60 +14,54 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
 
     @Override
     public void apply(AST ast) {
+        // TODO: Make the evaluator stateless by resolving this declaration of the ScopeManager
         this.scopeManager = new ScopeManager<>();
         transform(ast.root);
     }
 
     private void transform(StyleSheet sheet) {
-        try (var _ = scopeManager.enter()) {
-            transformBody(sheet.getChildren());
-        }
+        scopeManager.inNewScope(() -> transformBody(sheet.getChildren()));
     }
 
-    private void transformBody(ArrayList<ASTNode> body) {
+    private void transformBody(List<ASTNode> body) {
         for (int i = 0; i < body.size(); ) {
             ASTNode child = body.get(i);
 
-            if (child instanceof VariableAssignment va) {
-                Literal value = evaluate(va.expression);
-                scopeManager.declare(va.name.name, value);
-                body.remove(i);
-                continue;
-            }
-
-            if (child instanceof Declaration decl) {
-                decl.expression = evaluate(decl.expression);
-                i++;
-                continue;
-            }
-
-            if (child instanceof StyleRule rule) {
-                try (var _ = scopeManager.enter()) {
-                    transformBody(rule.body);
+            switch (child) {
+                case VariableAssignment va -> {
+                    scopeManager.declare(va.name.name, evaluate(va.expression));
+                    body.remove(i);
                 }
-                i++;
-                continue;
+                case Declaration decl -> {
+                    decl.expression = evaluate(decl.expression);
+                    i++;
+                }
+                case StyleRule rule -> {
+                    scopeManager.inNewScope(() -> transformBody(rule.body));
+                    i++;
+                }
+                case IfClause ifc -> {
+                    List<ASTNode> chosenBody = resolveIfCondition(ifc);
+
+                    scopeManager.inNewScope(() -> transformBody(chosenBody));
+
+                    body.remove(i);
+                    if (!chosenBody.isEmpty()) {
+                        body.addAll(i, chosenBody);
+                        i += chosenBody.size();
+                    }
+                }
+                default -> i++;
             }
 
-            if (child instanceof IfClause ifc) {
-                BoolLiteral condition = (BoolLiteral) evaluate(ifc.conditionalExpression);
-                ArrayList<ASTNode> chosenBody = condition.value
-                        ? ifc.body
-                        : (ifc.elseClause != null ? ifc.elseClause.body : new ArrayList<>());
-
-                try (var _ = scopeManager.enter()) {
-                    transformBody(chosenBody);
-                }
-
-                body.remove(i);
-                if (!chosenBody.isEmpty()) {
-                    body.addAll(i, chosenBody);
-                    i += chosenBody.size();
-                }
-                continue;
-            }
-            i++;
         }
+    }
+
+    private List<ASTNode> resolveIfCondition(IfClause ifc) {
+        BoolLiteral condition = (BoolLiteral) evaluate(ifc.conditionalExpression);
+        if (condition.value) return ifc.body;
+        else if (ifc.elseClause != null) return ifc.elseClause.body;
+        else return new ArrayList<>();
     }
 
     private Literal evaluate(Expression expr) {
@@ -100,7 +95,8 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
 
         return switch (lhs) {
             case PixelLiteral l when rhs instanceof PixelLiteral r -> new PixelLiteral(l.value - r.value);
-            case PercentageLiteral l when rhs instanceof PercentageLiteral r -> new PercentageLiteral(l.value - r.value);
+            case PercentageLiteral l when rhs instanceof PercentageLiteral r ->
+                    new PercentageLiteral(l.value - r.value);
             case ScalarLiteral l when rhs instanceof ScalarLiteral r -> new ScalarLiteral(l.value - r.value);
             default -> null;
         };
@@ -113,7 +109,8 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
 
         return switch (lhs) {
             case PixelLiteral l when rhs instanceof PixelLiteral r -> new PixelLiteral(l.value + r.value);
-            case PercentageLiteral l when rhs instanceof PercentageLiteral r -> new PercentageLiteral(l.value + r.value);
+            case PercentageLiteral l when rhs instanceof PercentageLiteral r ->
+                    new PercentageLiteral(l.value + r.value);
             case ScalarLiteral l when rhs instanceof ScalarLiteral r -> new ScalarLiteral(l.value + r.value);
             default -> null;
         };
