@@ -27,7 +27,6 @@ public class Checker {
     public void check(AST ast) {
         // TODO: Make checker stateless; it's not because of this
         scopeManager = new ScopeManager<>();
-
         scopeManager.inNewScope(() -> checkBody(ast.root.getChildren()));
     }
 

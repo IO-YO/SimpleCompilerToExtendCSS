@@ -8,21 +8,51 @@ import nl.han.ica.icss.scoping.ScopeManager;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Evaluates and simplifies an ICSS AST by resolving expressions, variables,
+ * and conditional branches.
+ *
+ * <p>The evaluator:
+ * <ul>
+ *   <li>Resolves variable assignments and removes them from the AST</li>
+ *   <li>Evaluates arithmetic expressions to literal values</li>
+ *   <li>Flattens if statements by selecting the active branch</li>
+ *   <li>Maintains lexical scoping during evaluation</li>
+ * </ul>
+ *
+ * <p>Assumes the AST has already been type-checked and is semantically valid.
+ */
 public class Evaluator implements Transform, ExpressionVisitor<Literal> {
 
+    /**
+     * Scope used to resolve variable references during evaluation.
+     */
     private ScopeManager<Expression> scopeManager;
 
     @Override
     public void apply(AST ast) {
-        // TODO: Make the evaluator stateless by resolving this declaration of the ScopeManager
+        // TODO: Refactor so the transformer is stateless
         this.scopeManager = new ScopeManager<>();
         transform(ast.root);
     }
 
+    /**
+     * Evaluates the contents of a stylesheet in a fresh scope.
+     */
     private void transform(StyleSheet sheet) {
         scopeManager.inNewScope(() -> transformBody(sheet.getChildren()));
     }
 
+    /**
+     * Evaluates and transforms a list of AST nodes in-place.
+     *
+     * <p>This method:
+     * <ul>
+     *   <li>Removes variable assignments after evaluation</li>
+     *   <li>Replaces declarations with evaluated literals</li>
+     *   <li>Recursively evaluates nested rules and conditional blocks</li>
+     * </ul>
+     */
     private void transformBody(List<ASTNode> body) {
         for (int i = 0; i < body.size(); ) {
             ASTNode child = body.get(i);
@@ -42,7 +72,6 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
                 }
                 case IfClause ifc -> {
                     List<ASTNode> chosenBody = resolveIfCondition(ifc);
-
                     scopeManager.inNewScope(() -> transformBody(chosenBody));
 
                     body.remove(i);
@@ -53,10 +82,14 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
                 }
                 default -> i++;
             }
-
         }
     }
 
+    /**
+     * Selects the active branch of an if-clause based on its condition.
+     *
+     * @return the body of the active branch, or an empty list if none applies
+     */
     private List<ASTNode> resolveIfCondition(IfClause ifc) {
         BoolLiteral condition = (BoolLiteral) evaluate(ifc.conditionalExpression);
         if (condition.value) return ifc.body;
@@ -68,6 +101,9 @@ public class Evaluator implements Transform, ExpressionVisitor<Literal> {
         return expr.accept(this);
     }
 
+    /**
+     * Returns the literal unchanged (quirk of the current visitor pattern implementation).
+     */
     @Override
     public Literal visitLiteral(Literal literal) {
         return literal;
