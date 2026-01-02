@@ -1,12 +1,14 @@
 package nl.han.ica.icss.checker;
 
 import nl.han.ica.icss.ast.operations.AddOperation;
+import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.scoping.ScopeManager;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.types.ExpressionType;
 
+import javax.naming.ldap.ExtendedRequest;
 import java.util.*;
 
 public class Checker {
@@ -20,7 +22,7 @@ public class Checker {
             "background-color", Set.of(ExpressionType.COLOR)
     );
 
-    private final Map<Class<?>, ExpressionType>  typeMap = Map.of(
+    private final Map<Class<?>, ExpressionType> typeMap = Map.of(
             PixelLiteral.class, ExpressionType.PIXEL,
             ColorLiteral.class, ExpressionType.COLOR,
             PercentageLiteral.class, ExpressionType.PERCENTAGE,
@@ -42,31 +44,31 @@ public class Checker {
 
     private void checkBody(List<ASTNode> body) {
         for (ASTNode child : body) {
-            if(child instanceof VariableAssignment va) {
+            if (child instanceof VariableAssignment va) {
                 handleVariableAssignment(va);
                 continue;
             }
 
-            if(child instanceof Declaration decl) {
+            if (child instanceof Declaration decl) {
                 checkDeclaration(decl);
                 continue;
             }
 
-            if(child instanceof StyleRule rule) {
+            if (child instanceof StyleRule rule) {
                 try (var _ = scopeManager.enter()) {
                     checkBody(rule.getChildren());
                 }
                 continue;
             }
 
-            if(child instanceof IfClause ifc) {
+            if (child instanceof IfClause ifc) {
                 checkIfCondition(ifc);
 
                 try (var _ = scopeManager.enter()) {
                     checkBody(ifc.body);
                 }
 
-                if(ifc.elseClause != null) {
+                if (ifc.elseClause != null) {
                     try (var _ = scopeManager.enter()) {
                         checkBody(ifc.elseClause.getChildren());
                     }
@@ -93,7 +95,9 @@ public class Checker {
     }
 
     private ExpressionType resolveExpressionType(Expression expr) {
-        if (expr == null) throw new IllegalArgumentException("Expression was null. AST invariant violated.");
+        if (expr == null) {
+            throw new IllegalArgumentException("Expression was null. AST invariant violated.");
+        }
 
         return switch (expr) {
             case VariableReference ref -> resolveVariableRef(ref);
@@ -118,15 +122,25 @@ public class Checker {
         var left = resolveExpressionType(op.lhs);
         var right = resolveExpressionType(op.rhs);
 
-        if(left == ExpressionType.UNDEFINED || right == ExpressionType.UNDEFINED) {
+        if (left == ExpressionType.UNDEFINED || right == ExpressionType.UNDEFINED) {
             return ExpressionType.UNDEFINED;
         }
 
-        if(op instanceof AddOperation || op instanceof SubtractOperation) {
-            if(left == right && (left == ExpressionType.PERCENTAGE || left == ExpressionType.SCALAR || left == ExpressionType.PIXEL)) {
+        if (op instanceof AddOperation || op instanceof SubtractOperation) {
+            if (left == right && (left == ExpressionType.PERCENTAGE || left == ExpressionType.SCALAR || left == ExpressionType.PIXEL)) {
                 return left;
             }
             op.setError("Can't Subtract OR Add " + left.name() + " from " + right.name());
+            return ExpressionType.UNDEFINED;
+        }
+
+        if (op instanceof MultiplyOperation) {
+            if ((left == ExpressionType.SCALAR || right == ExpressionType.SCALAR)
+                    && (left != ExpressionType.COLOR && right != ExpressionType.COLOR)
+            && (left != ExpressionType.BOOL && right != ExpressionType.BOOL)) {
+                return (left == ExpressionType.SCALAR) ? right : left;
+            }
+            op.setError("Can't Multiply " + left.name() + " with " + right.name());
             return ExpressionType.UNDEFINED;
         }
 
@@ -159,7 +173,7 @@ public class Checker {
         }
 
         ExpressionType actualType = resolveExpressionType(decl.expression);
-        if (actualType == ExpressionType.UNDEFINED || allowed.contains(actualType)){
+        if (actualType == ExpressionType.UNDEFINED || allowed.contains(actualType)) {
             return;
         }
 

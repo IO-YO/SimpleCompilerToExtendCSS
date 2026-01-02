@@ -324,7 +324,7 @@ class CheckerTest {
             if (expectedValid) {
                 assertNoErrors(ast);
             } else {
-                assertSingleError(ast, "multiply");
+                assertSingleError(ast, "Multiply");
             }
         }
 
