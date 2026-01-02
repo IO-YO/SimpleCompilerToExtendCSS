@@ -7,8 +7,8 @@ import nl.han.ica.icss.scoping.ScopeManager;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.types.ExpressionType;
+import org.jetbrains.annotations.NotNull;
 
-import javax.naming.ldap.ExtendedRequest;
 import java.util.*;
 
 public class Checker {
@@ -126,27 +126,39 @@ public class Checker {
             return ExpressionType.UNDEFINED;
         }
 
-        if (op instanceof AddOperation || op instanceof SubtractOperation) {
-            if (left == right && (left == ExpressionType.PERCENTAGE || left == ExpressionType.SCALAR || left == ExpressionType.PIXEL)) {
-                return left;
+        return switch (op) {
+            case SubtractOperation _, AddOperation _-> resolveAdditiveOperation(op, left, right);
+            case MultiplyOperation _ -> resolveMultiplyOperation(op, left, right);
+            default -> {
+                op.setError("Unknown operation: " + op.getClass().getSimpleName());
+                yield ExpressionType.UNDEFINED;
             }
-            op.setError("Can't Subtract OR Add " + left.name() + " from " + right.name());
-            return ExpressionType.UNDEFINED;
-        }
+        };
+    }
 
-        if (op instanceof MultiplyOperation) {
-            if ((left == ExpressionType.SCALAR || right == ExpressionType.SCALAR)
-                    && (left != ExpressionType.COLOR && right != ExpressionType.COLOR)
-            && (left != ExpressionType.BOOL && right != ExpressionType.BOOL)) {
-                return (left == ExpressionType.SCALAR) ? right : left;
-            }
-            op.setError("Can't Multiply " + left.name() + " with " + right.name());
-            return ExpressionType.UNDEFINED;
+    private static @NotNull ExpressionType resolveAdditiveOperation(Operation op, ExpressionType left, ExpressionType right) {
+        if (left == right && (left == ExpressionType.PERCENTAGE || left == ExpressionType.SCALAR || left == ExpressionType.PIXEL)) {
+            return left;
         }
-
-        op.setError("Unknown operation: " + op.getClass().getSimpleName());
+        op.setError("Can't Subtract OR Add " + left.name() + " from " + right.name());
         return ExpressionType.UNDEFINED;
+    }
 
+    private @NotNull ExpressionType resolveMultiplyOperation(Operation op, ExpressionType left, ExpressionType right) {
+        String errorDescription = "Can't Multiply " + left.name() + " with " + right.name();
+
+        if (left == ExpressionType.COLOR || right == ExpressionType.COLOR
+                || left == ExpressionType.BOOL || right == ExpressionType.BOOL) {
+            op.setError(errorDescription);
+            return ExpressionType.UNDEFINED;
+        }
+
+        if (left != ExpressionType.SCALAR && right != ExpressionType.SCALAR) {
+            op.setError(errorDescription);
+            return ExpressionType.UNDEFINED;
+        }
+
+        return (left == ExpressionType.SCALAR) ? right : left;
     }
 
     private ExpressionType resolveVariableRef(VariableReference ref) {
