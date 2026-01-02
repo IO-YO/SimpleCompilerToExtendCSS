@@ -11,23 +11,17 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import static nl.han.ica.icss.ast.types.ExpressionType.*;
+
 public class Checker {
 
-    ScopeManager<ExpressionType> scopeManager;
+    private ScopeManager<ExpressionType> scopeManager;
 
     private final Map<String, Set<ExpressionType>> allowedTypes = Map.of(
-            "width", Set.of(ExpressionType.PERCENTAGE, ExpressionType.PIXEL),
-            "height", Set.of(ExpressionType.PIXEL, ExpressionType.PERCENTAGE),
-            "color", Set.of(ExpressionType.COLOR),
-            "background-color", Set.of(ExpressionType.COLOR)
-    );
-
-    private final Map<Class<?>, ExpressionType> typeMap = Map.of(
-            PixelLiteral.class, ExpressionType.PIXEL,
-            ColorLiteral.class, ExpressionType.COLOR,
-            PercentageLiteral.class, ExpressionType.PERCENTAGE,
-            ScalarLiteral.class, ExpressionType.SCALAR,
-            BoolLiteral.class, ExpressionType.BOOL
+            "width", Set.of(PERCENTAGE, PIXEL),
+            "height", Set.of(PIXEL, PERCENTAGE),
+            "color", Set.of(COLOR),
+            "background-color", Set.of(COLOR)
     );
 
     public void check(AST ast) {
@@ -35,6 +29,7 @@ public class Checker {
             throw new IllegalArgumentException("AST or root cannot be null");
         }
 
+        // TODO: Make checker stateless; it's not because of this
         scopeManager = new ScopeManager<>();
 
         try (var _ = scopeManager.enter()) {
@@ -44,43 +39,44 @@ public class Checker {
 
     private void checkBody(List<ASTNode> body) {
         for (ASTNode child : body) {
-            if (child instanceof VariableAssignment va) {
-                handleVariableAssignment(va);
-                continue;
-            }
-
-            if (child instanceof Declaration decl) {
-                checkDeclaration(decl);
-                continue;
-            }
-
-            if (child instanceof StyleRule rule) {
-                try (var _ = scopeManager.enter()) {
-                    checkBody(rule.getChildren());
-                }
-                continue;
-            }
-
-            if (child instanceof IfClause ifc) {
-                checkIfCondition(ifc);
-
-                try (var _ = scopeManager.enter()) {
-                    checkBody(ifc.body);
-                }
-
-                if (ifc.elseClause != null) {
-                    try (var _ = scopeManager.enter()) {
-                        checkBody(ifc.elseClause.getChildren());
-                    }
+            switch (child) {
+                case VariableAssignment va -> handleVariableAssignment(va);
+                case Declaration decl -> handleDeclaration(decl);
+                case IfClause ifc -> handleIfClause(ifc);
+                case StyleRule rule -> handleStyleRule(rule);
+                default -> { // skip
                 }
             }
+        }
+    }
 
+    private void handleStyleRule(StyleRule rule) {
+        try (var _ = scopeManager.enter()) {
+            checkBody(rule.getChildren());
+        }
+    }
+
+    private void handleIfClause(IfClause ifc) {
+        checkIfCondition(ifc);
+
+        try (var _ = scopeManager.enter()) {
+            checkBody(ifc.body);
+        }
+
+        if (ifc.elseClause != null) {
+            try (var _ = scopeManager.enter()) {
+                checkBody(ifc.elseClause.getChildren());
+            }
         }
     }
 
     private void checkIfCondition(IfClause ifc) {
+        if (ifc.conditionalExpression == null) {
+            ifc.setError("If-condition is missing");
+            return;
+        }
         ExpressionType type = resolveExpressionType(ifc.conditionalExpression);
-        if (type != ExpressionType.BOOL) {
+        if (type != BOOL) {
             ifc.setError("If-condition must be a boolean, but got: " + type);
         }
     }
@@ -88,90 +84,84 @@ public class Checker {
     private void handleVariableAssignment(VariableAssignment varAss) {
         ExpressionType type = resolveExpressionType(varAss.expression);
         String varName = varAss.name.name;
-        if (scopeManager.existsInCurrentScope(varName)) {
+        if (!scopeManager.declareIfAbsent(varName, type)) {
             varAss.setError("Variable '" + varName + "' redeclared in the same scope");
-            return;
         }
-        scopeManager.declare(varName, type);
     }
 
-    private ExpressionType resolveExpressionType(Expression expr) {
-        if (expr == null) {
-            throw new IllegalArgumentException("Expression was null. AST invariant violated.");
-        }
-
+    private ExpressionType resolveExpressionType(@NotNull Expression expr) {
         return switch (expr) {
             case VariableReference ref -> resolveVariableRef(ref);
             case Operation op -> resolveOperationType(op);
             case Literal lit -> resolveLiteralType(lit);
             default -> {
                 expr.setError("Unsupported expression: " + expr.getClass().getSimpleName());
-                yield ExpressionType.UNDEFINED;
+                yield UNDEFINED;
             }
         };
     }
 
     private ExpressionType resolveLiteralType(Literal lit) {
-        ExpressionType t = typeMap.get(lit.getClass());
-        if (t != null) return t;
-
-        lit.setError("Unknown literal type: " + lit.getClass().getSimpleName());
-        return ExpressionType.UNDEFINED;
+        return switch (lit) {
+            case PixelLiteral _ -> PIXEL;
+            case ScalarLiteral _ -> SCALAR;
+            case BoolLiteral _ -> BOOL;
+            case PercentageLiteral _ -> PERCENTAGE;
+            case ColorLiteral _ -> COLOR;
+            default -> {
+                lit.setError("Unknown literal type: " + lit.getClass().getSimpleName());
+                yield UNDEFINED;
+            }
+        };
     }
 
     private ExpressionType resolveOperationType(Operation op) {
         var left = resolveExpressionType(op.lhs);
         var right = resolveExpressionType(op.rhs);
 
-        if (left == ExpressionType.UNDEFINED || right == ExpressionType.UNDEFINED) {
-            return ExpressionType.UNDEFINED;
-        }
+        if (left == UNDEFINED || right == UNDEFINED) return UNDEFINED;
 
         return switch (op) {
-            case SubtractOperation _, AddOperation _-> resolveAdditiveOperation(op, left, right);
+            case SubtractOperation _, AddOperation _ -> resolveAdditiveOperation(op, left, right);
             case MultiplyOperation _ -> resolveMultiplyOperation(op, left, right);
             default -> {
                 op.setError("Unknown operation: " + op.getClass().getSimpleName());
-                yield ExpressionType.UNDEFINED;
+                yield UNDEFINED;
             }
         };
     }
 
-    private static @NotNull ExpressionType resolveAdditiveOperation(Operation op, ExpressionType left, ExpressionType right) {
-        if (left == right && (left == ExpressionType.PERCENTAGE || left == ExpressionType.SCALAR || left == ExpressionType.PIXEL)) {
+    private ExpressionType resolveAdditiveOperation(Operation op, ExpressionType left, ExpressionType right) {
+        if (left == right
+                && (left == PERCENTAGE || left == SCALAR || left == PIXEL)) {
             return left;
         }
-        op.setError("Can't Subtract OR Add " + left.name() + " from " + right.name());
-        return ExpressionType.UNDEFINED;
+        op.setError("Invalid operands for " + op.getNodeLabel() + ": " + left + " and " + right);
+        return UNDEFINED;
     }
 
-    private @NotNull ExpressionType resolveMultiplyOperation(Operation op, ExpressionType left, ExpressionType right) {
-        String errorDescription = "Can't Multiply " + left.name() + " with " + right.name();
+    private ExpressionType resolveMultiplyOperation(Operation op, ExpressionType left, ExpressionType right) {
+        boolean hasNonMathType = left == BOOL || right == BOOL || left == COLOR || right == COLOR;
+        boolean containsNoScalar = left != SCALAR && right != SCALAR;
 
-        if (left == ExpressionType.COLOR || right == ExpressionType.COLOR
-                || left == ExpressionType.BOOL || right == ExpressionType.BOOL) {
-            op.setError(errorDescription);
-            return ExpressionType.UNDEFINED;
+        if (hasNonMathType || containsNoScalar) {
+            op.setError("Can't Multiply " + left + " with " + right);
+            return UNDEFINED;
         }
 
-        if (left != ExpressionType.SCALAR && right != ExpressionType.SCALAR) {
-            op.setError(errorDescription);
-            return ExpressionType.UNDEFINED;
-        }
-
-        return (left == ExpressionType.SCALAR) ? right : left;
+        return left == SCALAR ? right : left;
     }
 
     private ExpressionType resolveVariableRef(VariableReference ref) {
         ExpressionType type = scopeManager.resolve(ref.name);
         if (type == null) {
             ref.setError("Unknown variable '" + ref.name + "'");
-            return ExpressionType.UNDEFINED;
+            return UNDEFINED;
         }
         return type;
     }
 
-    private void checkDeclaration(Declaration decl) {
+    private void handleDeclaration(Declaration decl) {
         String propertyName = decl.property.name;
         Set<ExpressionType> allowed = allowedTypes.get(propertyName);
 
@@ -186,7 +176,7 @@ public class Checker {
         }
 
         ExpressionType actualType = resolveExpressionType(decl.expression);
-        if (actualType == ExpressionType.UNDEFINED || allowed.contains(actualType)) {
+        if (actualType == UNDEFINED || allowed.contains(actualType)) {
             return;
         }
 
@@ -194,3 +184,4 @@ public class Checker {
     }
 
 }
+

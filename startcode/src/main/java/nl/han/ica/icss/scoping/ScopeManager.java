@@ -32,6 +32,12 @@ public class ScopeManager<T> implements IScopeManager<T> {
         current.put(name, type);
     }
 
+    public boolean declareIfAbsent(String name, T value) {
+        Map<String, T> current = scopes.peek();
+        if (current == null) throw new IllegalStateException("No active scopes.");
+        return current.putIfAbsent(name, value) == null;
+    }
+
     @Override
     public T resolve(String name) {
         for (Map<String, T> scope : scopes) {
@@ -44,12 +50,8 @@ public class ScopeManager<T> implements IScopeManager<T> {
 
     @Override
     public boolean existsInCurrentScope(String name) {
-        for (Map<String, T> scope : scopes) {
-            if (scope.containsKey(name)) {
-                return true;
-            }
-        }
-        return false;
+        Map<String, T> current = scopes.peek();
+        return current != null && current.containsKey(name);
     }
 
     public static final class Scope implements AutoCloseable {
