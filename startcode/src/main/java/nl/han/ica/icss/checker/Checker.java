@@ -90,6 +90,7 @@ public class Checker {
         String varName = varAss.name.name;
         if (scopeManager.existsInCurrentScope(varName)) {
             varAss.setError("Variable '" + varName + "' redeclared in the same scope");
+            return;
         }
         scopeManager.declare(varName, type);
     }
