@@ -19,6 +19,8 @@ public interface IScopeManager<T> {
      */
     void declare(String name, T type);
 
+    boolean declareIfAbsent(String name, T value);
+
     /**
      * Resolves a variable by its name in the current or any outer scope.
      *
@@ -27,5 +29,6 @@ public interface IScopeManager<T> {
      */
     T resolve(String name);
 
+    void inNewScope(Runnable work);
 }
 
